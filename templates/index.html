@@ -1,0 +1,15 @@
+<html>
+<head>
+    <title>MIT LTI Flask Sample</title>
+</head>
+<body>
+<h1>Hello {{ lti.name }}.</h1>
+
+<a href="{{ url_for('add_form') }}">Start problem</a>
+<br>
+<a href="{{ url_for('index_staff') }}">Start staff page</a>
+<br>
+<a href="{{ url_for('photo') }}">See picture</a>
+
+</body>
+</html>
