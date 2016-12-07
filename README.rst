@@ -1,2 +1,2 @@
-Ceci est la base de la communication sécurisée avec moodle.
+Ceci est la base pour une communication sécurisée avec moodle.
 Documentation à venir.
