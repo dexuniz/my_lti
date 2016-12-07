@@ -18,12 +18,11 @@ app.config.from_object('config')
 class AddForm(Form): 
     
     """ 
-    Utilisé pour le calcul simple du lien "start problem"
+    Utilisé pour le calcul simple du lien start problems
     Add data from Form
 
     :param Form:
     """
-
     p1 = IntegerField('p1')
     p2 = IntegerField('p2')
     result = IntegerField('result')
