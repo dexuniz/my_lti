@@ -1,1 +1,1 @@
-web: gunicorn mit_lti_flask_sample:app --log-file -
+web: gunicorn projet_reco:app --log-file -
