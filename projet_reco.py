@@ -15,7 +15,7 @@ app = Flask(__name__)
 app.config.from_object('config')
 
 
-class AddForm(Form):
+class AddForm(Form): #Utilisé pour le calcul simple du lien "start problem"
     """ Add data from Form
 
     :param Form:
@@ -28,17 +28,13 @@ class AddForm(Form):
 
 
 def error(exception=None):
-    """ render error page
-
-    :param exception: optional exception
-    :return: the error.html template rendered
-    """
+    """ Page d'erreur """
     return render_template('error.html')
 
 
 @app.route('/is_up', methods=['GET'])
 def hello_world(lti=lti):
-    """ Indicate the app is working. Provided for debugging purposes.
+    """ Test pour debug de l'application
 
     :param lti: the `lti` object from `pylti`
     :return: simple page that indicates the request was processed by the lti
@@ -52,8 +48,7 @@ def hello_world(lti=lti):
 @app.route('/lti/', methods=['GET', 'POST'])
 @lti(request='initial', error=error, app=app)
 def index(lti=lti):
-    """ initial access page to the lti provider.  This page provides
-    authorization for the user.
+    """ Page d'acceuil, permet d'authentifier l'utilisateur.
 
     :param lti: the `lti` object from `pylti`
     :return: index page for lti provider
@@ -64,7 +59,7 @@ def index(lti=lti):
 @app.route('/index_staff', methods=['GET', 'POST'])
 @lti(request='session', error=error, role='staff', app=app)
 def index_staff(lti=lti):
-    """ render the contents of the staff.html template
+    """ Affiche le template staff.html
 
     :param lti: the `lti` object from `pylti`
     :return: the staff.html template rendered
@@ -75,7 +70,7 @@ def index_staff(lti=lti):
 @app.route('/add', methods=['GET'])
 @lti(request='session', error=error, app=app)
 def add_form(lti=lti):
-    """ initial access page for lti consumer
+    """ Page d'acces pour le lti consumer
 
     :param lti: the `lti` object from `pylti`
     :return: index page for lti provider
@@ -89,7 +84,7 @@ def add_form(lti=lti):
 @app.route('/grade', methods=['POST'])
 @lti(request='session', error=error, app=app)
 def grade(lti=lti):
-    """ post grade
+    """ Test pour poster une note
 
     :param lti: the `lti` object from `pylti`
     :return: grade rendered by grade.html template
@@ -114,7 +109,7 @@ def photo(lti=lti):
 	return render_template('photo.html', form=form, photo=photo, st=st)
 
 def set_debugging():
-    """ enable debug logging
+    """ Debuggage du logging
 
     """
     import logging
