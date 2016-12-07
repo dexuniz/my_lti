@@ -15,8 +15,11 @@ app = Flask(__name__)
 app.config.from_object('config')
 
 
-class AddForm(Form): #Utilisé pour le calcul simple du lien "start problem"
-    """ Add data from Form
+class AddForm(Form): 
+    
+    """ 
+    Utilisé pour le calcul simple du lien "start problem"
+    Add data from Form
 
     :param Form:
     """
