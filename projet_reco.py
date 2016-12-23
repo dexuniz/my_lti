@@ -8,6 +8,8 @@ from wtforms import IntegerField, BooleanField
 from random import randint
 from PIL import Image
 
+# coding=utf-8
+
 from pylti.flask import lti
 
 VERSION = '0.0.1'
