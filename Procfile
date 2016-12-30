@@ -1,1 +1,1 @@
-web: gunicorn projet_reco.wsgi:application --preload
+web: gunicorn projet_reco:app --preload
