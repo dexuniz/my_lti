@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*- 
 import os
 import sys
 import requests
@@ -7,8 +9,6 @@ from flask.ext.wtf import Form
 from wtforms import IntegerField, BooleanField
 from random import randint
 from PIL import Image
-
-# coding=utf-8
 
 from pylti.flask import lti
 
