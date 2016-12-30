@@ -1,1 +1,1 @@
-web: gunicorn projet_reco.wsgi:application --log-file=-
+web: gunicorn projet_reco.py:application --log-file=-
