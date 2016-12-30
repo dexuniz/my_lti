@@ -1,1 +1,1 @@
-web: gunicorn projet_reco.py:application --preload
+web: gunicorn projet_reco:application --preload
