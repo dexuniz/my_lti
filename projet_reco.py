@@ -106,8 +106,7 @@ def grade(lti=lti):
 def photo(lti=lti):
 	""" test d'affichage d'une photo """
 	form=AddForm()
-	url="http://www.blog.pythonlibrary.org/2012/06/07/python-101-how-to-download-a-file/"
-	photo=requests.get(url, stream = True)
+	photo="http://images.google.fr/imgres?imgurl=http%3A%2F%2Fimg1.gtsstatic.com%2Fv%25E9hicule%2Fphot-8_1623_w620.jpg&imgrefurl=http%3A%2F%2Fwww.gentside.com%2Fv%25E9hicule%2Fphot-8_pic1623.html&h=416&w=620&tbnid=LMypAIZ1WwBZuM%3A&vet=1&docid=KEGcl0Vh5ukWXM&ei=Hy9tWJrRDsbZabDwllg&tbm=isch&iact=rc&uact=3&dur=541&page=0&start=0&ndsp=21&ved=0ahUKEwja3JmigKnRAhXGbBoKHTC4BQsQMwgyKAMwAw&bih=775&biw=1474"
 	#photo.raw.decode_content = True
 	st = photo.status_code
 	reload(sys)  
