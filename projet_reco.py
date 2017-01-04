@@ -106,7 +106,7 @@ def grade(lti=lti):
 def photo(lti=lti):
 	""" test d'affichage d'une photo """
 	form=AddForm()
-	photo="http://images.google.fr/imgres?imgurl=http%3A%2F%2Fimg1.gtsstatic.com%2Fv%25E9hicule%2Fphot-8_1623_w620.jpg&imgrefurl=http%3A%2F%2Fwww.gentside.com%2Fv%25E9hicule%2Fphot-8_pic1623.html&h=416&w=620&tbnid=LMypAIZ1WwBZuM%3A&vet=1&docid=KEGcl0Vh5ukWXM&ei=Hy9tWJrRDsbZabDwllg&tbm=isch&iact=rc&uact=3&dur=541&page=0&start=0&ndsp=21&ved=0ahUKEwja3JmigKnRAhXGbBoKHTC4BQsQMwgyKAMwAw&bih=775&biw=1474"
+	photo="https://www.nasa.gov/sites/default/files/styles/image_card_4x3_ratio/public/thumbnails/image/leisa_christmas_false_color.png";
 	#photo.raw.decode_content = True
 	st = photo.status_code
 	reload(sys)  
