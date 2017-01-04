@@ -108,10 +108,9 @@ def photo(lti=lti):
 	form=AddForm()
 	photo="https://www.nasa.gov/sites/default/files/styles/image_card_4x3_ratio/public/thumbnails/image/leisa_christmas_false_color.png";
 	#photo.raw.decode_content = True
-	st = photo.status_code
 	reload(sys)  
 	sys.setdefaultencoding('utf8')
-	return render_template('photo.html', form=form, photo=photo, st=st)
+	return render_template('photo.html', form=form, photo=photo)
 
 def set_debugging():
     """ Debuggage du logging
