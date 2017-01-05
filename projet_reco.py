@@ -111,7 +111,7 @@ def photo(lti=lti):
 	reload(sys)  
 	sys.setdefaultencoding('utf8')
 	return render_template('photo.html', form=form, photo=photo)
-	
+"""	
 UPLOAD_FOLDER = './pictures/'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
@@ -147,7 +147,7 @@ def uploaded_file(filename):
 @app.route('/uploads/<filename>')
 def send_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
-	
+"""	
 def set_debugging():
     """ Debuggage du logging
 
