@@ -50,7 +50,7 @@ def hello_world(lti=lti):
 
 
 @app.route('/', methods=['GET', 'POST'])
-@app.route('/index', methods=['GET'])
+@app.route('/index', methods=['GET', 'POST'])
 @app.route('/lti/', methods=['GET', 'POST'])
 @lti(request='initial', error=error, app=app)
 def index(lti=lti):
