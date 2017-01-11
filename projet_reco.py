@@ -127,7 +127,7 @@ def download(lti=lti):
 def see_download(lti=lti):
 	"""Affichage du ficher ddl"""
 	with app.open_instance_resource('downloaded_file', 'rb') as f:
-        dl=f.read(r.content)
+		dl=f.read(r.content)
 	return render_template('see_downloaded.html', dl=dl)	
 		
 def set_debugging():
