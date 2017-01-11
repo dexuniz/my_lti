@@ -111,7 +111,25 @@ def photo(lti=lti):
 	reload(sys)  
 	sys.setdefaultencoding('utf8')
 	return render_template('photo.html', form=form, photo=photo)
+	
+@app.route('/download', methods=['GET', 'POST'])
+@lti(request='session', error=error, app=app)	
+def download(lti=lti)
+	"""test download d'un pdf host sous moodle"""
+	r = requests.get('https://uep.moodlecloud.com/pluginfile.php/91/mod_resource/content/1/Emma-Watson-Wallpaper-8.jpg')
 
+	with app.open_instance_resource('downloaded_file', 'wb') as f:
+        f.write(r.content)
+	return render_template('downloaded.html')
+	
+@app.route('/view_download', methods=['GET', 'POST'])
+@lti(request='session', error=error, app=app)
+def see_download(lti=lti)
+	"""Affichage du ficher ddl"""
+	with app.open_instance_resource('downloaded_file', 'rb') as f:
+        dl=f.read(r.content)
+	return render_template('see_downloaded.html', dl=dl)	
+		
 def set_debugging():
     """ Debuggage du logging
 

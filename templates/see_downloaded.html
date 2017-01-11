@@ -1,0 +1,7 @@
+<!doctype html>
+<title>Image téléchargée</title>
+{% if filename %}
+  <h1>Voila<img src="{{dl}}"></h1>
+{% else %}
+  <h1>Problème avec le téléchargement</h1>
+{% endif %}
