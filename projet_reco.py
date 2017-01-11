@@ -116,7 +116,8 @@ def photo(lti=lti):
 @lti(request='session', error=error, app=app)	
 def download(lti=lti):
 	"""test download d'un pdf host sous moodle"""
-	global r = requests.get('https://uep.moodlecloud.com/pluginfile.php/91/mod_resource/content/1/Emma-Watson-Wallpaper-8.jpg')
+	global r
+	r = requests.get('https://uep.moodlecloud.com/pluginfile.php/91/mod_resource/content/1/Emma-Watson-Wallpaper-8.jpg')
 
 	with app.open_instance_resource('downloaded_file', 'wb') as f:
 		f.write(r.content)
