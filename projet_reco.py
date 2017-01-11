@@ -3,7 +3,7 @@
 import os
 import sys
 import requests
-from flask import Flask, redirect, send_from_directory, render_template
+from flask import Flask, redirect,url_for , send_from_directory, render_template
 from flask import render_template
 from flask.ext.wtf import Form
 from wtforms import IntegerField, BooleanField
@@ -106,7 +106,7 @@ def grade(lti=lti):
 def photo(lti=lti):
 	""" test d'affichage d'une photo """
 	form=AddForm()
-	photo="https://www.nasa.gov/sites/default/files/styles/image_card_4x3_ratio/public/thumbnails/image/leisa_christmas_false_color.png";
+	photo="https://uep.moodlecloud.com/pluginfile.php/91/mod_resource/content/1/Emma-Watson-Wallpaper-8.jpg";
 	#photo.raw.decode_content = True
 	reload(sys)  
 	sys.setdefaultencoding('utf8')
