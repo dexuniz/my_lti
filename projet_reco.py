@@ -114,7 +114,7 @@ def photo(lti=lti):
 	
 @app.route('/download', methods=['GET', 'POST'])
 @lti(request='session', error=error, app=app)	
-def download(lti=lti)
+def download(lti=lti):
 	"""test download d'un pdf host sous moodle"""
 	r = requests.get('https://uep.moodlecloud.com/pluginfile.php/91/mod_resource/content/1/Emma-Watson-Wallpaper-8.jpg')
 
@@ -124,7 +124,7 @@ def download(lti=lti)
 	
 @app.route('/view_download', methods=['GET', 'POST'])
 @lti(request='session', error=error, app=app)
-def see_download(lti=lti)
+def see_download(lti=lti):
 	"""Affichage du ficher ddl"""
 	with app.open_instance_resource('downloaded_file', 'rb') as f:
         dl=f.read(r.content)
