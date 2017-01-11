@@ -3,7 +3,7 @@
 import os
 import sys
 import requests
-from flask import Flask, redirect, url_for, send_from_directory, render_template
+from flask import Flask, redirect, send_from_directory, render_template
 from flask import render_template
 from flask.ext.wtf import Form
 from wtforms import IntegerField, BooleanField
