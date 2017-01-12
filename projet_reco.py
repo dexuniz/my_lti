@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-from os import environ
 import sys
 import requests
 from flask import Flask, redirect,url_for , send_from_directory, render_template
