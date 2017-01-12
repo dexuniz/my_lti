@@ -118,7 +118,7 @@ def download(lti=lti):
 	"""test download d'un pdf host sous moodle"""
 
 	resource = urllib.urlopen("http://www.digimouth.com/news/media/2011/09/google-logo.jpg")
-	output = open("Image.jpg","wb")
+	output = open("file01.jpg","wb")
 	output.write(resource.read())
 	output.close()
 	return render_template('downloaded.html', lti=lti)
