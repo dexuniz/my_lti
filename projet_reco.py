@@ -121,7 +121,7 @@ def download(lti=lti):
 	with app.open_instance_resource('downloaded_file', 'wb') as f:
 		f.write(r.content)
 	with app.open_instance_resource('downloaded_file', 'rb') as f:
-		dl=f.read(r.content)
+		dl=f.read()
 	return render_template('downloaded.html', lti=lti, dl=dl)
 	
 # @app.route('/view_download', methods=['GET', 'POST'])
