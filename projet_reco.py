@@ -8,6 +8,7 @@ from flask import render_template
 from flask.ext.wtf import Form
 from wtforms import IntegerField, BooleanField
 from random import randint
+import urllib
 
 from pylti.flask import lti
 
@@ -115,14 +116,8 @@ def photo(lti=lti):
 @lti(request='session', error=error, app=app)	
 def download(lti=lti):
 	"""test download d'un pdf host sous moodle"""
-	global r
-	r = requests.get('https://uep.moodlecloud.com/pluginfile.php/91/mod_resource/content/1/Emma-Watson-Wallpaper-8.jpg')
-
-	with app.open_instance_resource('downloaded_file', 'wb') as f:
-		f.write(r.content)
-	with app.open_instance_resource('downloaded_file', 'rb') as f:
-		dl=f.read()
-	return render_template('downloaded.html', lti=lti, dl=dl)
+	urllib.urlretrieve("https://uep.moodlecloud.com/pluginfile.php/91/mod_resource/content/1/Emma-Watson-Wallpaper-8.jpg", "Image.jpg")
+	return render_template('downloaded.html', lti=lti)
 	
 # @app.route('/view_download', methods=['GET', 'POST'])
 # @lti(request='session', error=error, app=app)
