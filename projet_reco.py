@@ -121,17 +121,19 @@ def download(lti=lti):
 
 	with app.open_instance_resource('downloaded_file', 'wb') as f:
 		f.write(r.content)
-	return render_template('downloaded.html', lti=lti, r=r)
-	
-@app.route('/view_download', methods=['GET', 'POST'])
-@lti(request='session', error=error, app=app)
-def see_download(lti=lti):
-	"""Affichage du ficher ddl"""
-	
 	with app.open_instance_resource('downloaded_file', 'rb') as f:
-		global r
 		dl=f.read(r.content)
-	return render_template('see_downloaded.html', dl=dl)	
+	return render_template('downloaded.html', lti=lti, dl=dl)
+	
+# @app.route('/view_download', methods=['GET', 'POST'])
+# @lti(request='session', error=error, app=app)
+# def see_download(lti=lti):
+	# """Affichage du ficher ddl"""
+	
+	# with app.open_instance_resource('downloaded_file', 'rb') as f:
+		# global r
+		# dl=f.read(r.content)
+	# return render_template('see_downloaded.html', dl=dl)	
 		
 def set_debugging():
     """ Debuggage du logging
