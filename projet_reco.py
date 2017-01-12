@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
+import os
 import sys
 import requests
 from flask import Flask, redirect,url_for , send_from_directory, render_template
@@ -7,11 +8,10 @@ from flask import render_template
 from flask.ext.wtf import Form
 from wtforms import IntegerField, BooleanField
 from random import randint
-from PIL import Image
 
 from pylti.flask import lti
 
-VERSION = '0.0.1'
+VERSION = '0.0.5'
 app = Flask(__name__)
 app.config.from_object('config')
 
