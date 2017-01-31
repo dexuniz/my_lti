@@ -126,13 +126,7 @@ def photo(lti=lti):
 	results = cHandler.fetchall()
 	return render_template('photo.html', form=form, results=results)
 
-@app.route('/view_excercie', methods=['GET', 'POST'])
-@lti(request='session', error=error, app=app)	
-def view_exercice():
-	
-	
 
-	
 def set_debugging():
     """ Debuggage du logging
 
