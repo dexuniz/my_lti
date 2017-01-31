@@ -107,7 +107,7 @@ def grade(lti=lti):
 @lti(request='session', error=error, app=app)
 def photo(lti=lti):
 	
-	myDB = MySQLdb.connect(host="localhost",port=3307,user="root",passwd="",db="moodle")
+	myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
 	cHandler = myDB.cursor()
 	#cHandler.execute("SELECT defaultgroupingid FROM mdl_course WHERE fullname='Recommendation'")
 	cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid\
