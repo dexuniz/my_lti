@@ -9,8 +9,10 @@ from flask.ext.wtf import Form
 from wtforms import IntegerField, BooleanField
 from random import randint
 import urllib
-
+import sqlite3
 from pylti.flask import lti
+import MySQLdb
+
 
 VERSION = '0.0.5'
 app = Flask(__name__)
@@ -104,35 +106,33 @@ def grade(lti=lti):
 @app.route('/photo', methods=['GET', 'POST'])
 @lti(request='session', error=error, app=app)
 def photo(lti=lti):
-	""" test d'affichage d'une photo """
-	form=AddForm()
-	photo="https://uep.moodlecloud.com/pluginfile.php/91/mod_resource/content/1/Emma-Watson-Wallpaper-8.jpg";
-	#photo.raw.decode_content = True
-	reload(sys)  
-	sys.setdefaultencoding('utf8')
-	return render_template('photo.html', form=form, photo=photo)
 	
-@app.route('/download', methods=['GET', 'POST'])
-@lti(request='session', error=error, app=app)	
-def download(lti=lti):
-	"""test download d'un pdf host sous moodle"""
+	myDB = MySQLdb.connect(host="localhost",port=3306,user="root",passwd="",db="moodle")
+	cHandler = myDB.cursor()
+	#cHandler.execute("SELECT defaultgroupingid FROM mdl_course WHERE fullname='Recommendation'")
+	cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid\
+	 FROM mdl_user u\
+	 JOIN mdl_user_enrolments ue ON ue.userid = u.id\
+	 JOIN mdl_enrol e ON e.id = ue.enrolid\
+	 JOIN mdl_role_assignments ra ON ra.userid = u.id\
+	 JOIN mdl_context ct ON ct.id = ra.contextid AND ct.contextlevel = 50\
+	 JOIN mdl_course c ON c.id = ct.instanceid AND e.courseid = c.id\
+	 JOIN mdl_role r ON r.id = ra.roleid AND r.shortname = 'student'\
+	 WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
+	 AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid ='4'")
+	#cHandler.execute("SELECT id FROM mdl_user_enrolments WHERE mdl_user_enrolments.enrolid = '7L'")
+	#cHandler.execute("SELECT lastname FROM mdl_user WHERE mdl_user.id = 2 OR mdl_user.id = 3")
+	#cHandler.execute("SELECT * FROM information_schema.tables WHERE TABLE_TYPE='BASE TABLE'")
+	results = cHandler.fetchall()
+	return render_template('photo.html', form=form, results=results)
 
-	resource = urllib.urlopen("http://www.digimouth.com/news/media/2011/09/google-logo.jpg")
-	output = open("file01.jpg","wb")
-	output.write(resource.read())
-	output.close()
-	return render_template('downloaded.html', lti=lti)
+@app.route('/view_excercie', methods=['GET', 'POST'])
+@lti(request='session', error=error, app=app)	
+def view_exercice():
 	
-# @app.route('/view_download', methods=['GET', 'POST'])
-# @lti(request='session', error=error, app=app)
-# def see_download(lti=lti):
-	# """Affichage du ficher ddl"""
 	
-	# with app.open_instance_resource('downloaded_file', 'rb') as f:
-		# global r
-		# dl=f.read(r.content)
-	# return render_template('see_downloaded.html', dl=dl)	
-		
+
+	
 def set_debugging():
     """ Debuggage du logging
 
