@@ -1,4 +1,10 @@
 <!doctype html>
 <title>Élèves participants au cours</title>
-<h2>Résultats sous la forme (userid,lastname,courseid)</h2>
-  <h1>{{results}}></h1>
+<h2>Nom des élèves inscrits au cours</h2>
+<h1>
+<ul>
+{% for mot in results :%}
+    <li>{{ mot[1] }}</li>
+{% endfor %}
+</ul>
+</h1>
