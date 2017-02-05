@@ -90,19 +90,10 @@ def grade(lti=lti):
 @app.route('/teacher',methods=['GET','POST'])
 @lti(request='session', error=error, app=app)
 def teachers_class(lti=lti):
-	id = lti.user_id
+	shortName = lti.context_label
 	myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
 	cHandler = myDB.cursor()
-	cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid, c.fullname AS fullname\
-	FROM mdl_user u\
-	JOIN mdl_user_enrolments ue ON ue.userid = u.id\
-	JOIN mdl_enrol e ON e.id = ue.enrolid\
-	JOIN mdl_role_assignments ra ON ra.userid = u.id\
-	JOIN mdl_context ct ON ct.id = ra.contextid AND ct.contextlevel = 50\
-	JOIN mdl_course c ON c.id = ct.instanceid AND e.courseid = c.id\
-	JOIN mdl_role r ON r.id = ra.roleid AND r.shortname = 'teacher'\
-	WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
-	AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND u.id = %s", id)
+	cHandler.execute("SELECT c.id FROM mdl_courses c WHERE c.shortname = %s", shortname)
 	results = cHandler.fetchall()
 	return render_template('photo.html', results=results)
 	
