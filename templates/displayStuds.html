@@ -2,9 +2,13 @@
 <title>Élèves participants au cours</title>
 <h2>Elèves du cours</h2>
 <h1>
-<ul>
+<table>
 {% for mot in results :%}
-    <li>{{ mot[1] }}</li>
+
+ <tr>
+   <th>mot[1]</th>
+ </tr>
+
 {% endfor %}
-</ul>
+</table>
 </h1>

@@ -105,36 +105,38 @@ def teachers_class(lti=lti):
 	 WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
 	 AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid = %s", courseid)
 	results = cHandler.fetchall()
-	return render_template('photo.html', results=results)
 	
+	#Accès à la base de donnée locale du plugin
+	return render_template('displayStuds.html', results=results)
 	
-@app.route('/students_related',methods=['GET','POST'])
-@lti(request='session', error=error, app=app)
-def get_studs(lti=lti):
+""" N'est plus d'actualité, on peut récuperer l'id du cours via lti """	
+# @app.route('/students_related',methods=['GET','POST'])
+# @lti(request='session', error=error, app=app)
+# def get_studs(lti=lti):
 
-	course_number=4
-	myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
-	cHandler = myDB.cursor()
-	#cHandler.execute("SELECT 
-	#cHandler.execute("SELECT defaultgroupingid FROM mdl_course WHERE fullname='Recommendation'")
-	#Liste des étudiants du cours sous la forme (userid, lastname, course id)
-	cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid\
-	 FROM mdl_user u\
-	 JOIN mdl_user_enrolments ue ON ue.userid = u.id\
-	 JOIN mdl_enrol e ON e.id = ue.enrolid\
-	 JOIN mdl_role_assignments ra ON ra.userid = u.id\
-	 JOIN mdl_context ct ON ct.id = ra.contextid AND ct.contextlevel = 50\
-	 JOIN mdl_course c ON c.id = ct.instanceid AND e.courseid = c.id\
-	 JOIN mdl_role r ON r.id = ra.roleid AND r.shortname = 'student'\
-	 WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
-	 AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid = %s", course_number)
-	#cHandler.execute("SELECT id FROM mdl_user_enrolments WHERE mdl_user_enrolments.enrolid = '7L'")
-	#cHandler.execute("SELECT lastname FROM mdl_user WHERE mdl_user.id = 2 OR mdl_user.id = 3")
-	#cHandler.execute("SELECT * FROM information_schema.tables WHERE TABLE_TYPE='BASE TABLE'")
-	results = cHandler.fetchall()
-	return render_template('photo.html', results=results)	
+	# course_number=4
+	# myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
+	# cHandler = myDB.cursor()
+	cHandler.execute("SELECT 
+	cHandler.execute("SELECT defaultgroupingid FROM mdl_course WHERE fullname='Recommendation'")
+	Liste des étudiants du cours sous la forme (userid, lastname, course id)
+	# cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid\
+	 # FROM mdl_user u\
+	 # JOIN mdl_user_enrolments ue ON ue.userid = u.id\
+	 # JOIN mdl_enrol e ON e.id = ue.enrolid\
+	 # JOIN mdl_role_assignments ra ON ra.userid = u.id\
+	 # JOIN mdl_context ct ON ct.id = ra.contextid AND ct.contextlevel = 50\
+	 # JOIN mdl_course c ON c.id = ct.instanceid AND e.courseid = c.id\
+	 # JOIN mdl_role r ON r.id = ra.roleid AND r.shortname = 'student'\
+	 # WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
+	 # AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid = %s", course_number)
+	cHandler.execute("SELECT id FROM mdl_user_enrolments WHERE mdl_user_enrolments.enrolid = '7L'")
+	cHandler.execute("SELECT lastname FROM mdl_user WHERE mdl_user.id = 2 OR mdl_user.id = 3")
+	cHandler.execute("SELECT * FROM information_schema.tables WHERE TABLE_TYPE='BASE TABLE'")
+	# results = cHandler.fetchall()
+	# return render_template('photo.html', results=results)	
 	
-
+""" Filtre html pour récuperer les élèves d'un cours, non utilisé pour le moment """
 @app.template_filter('get_students_from_course')
 @lti(request='session', error=error, app=app)
 def get_studs(course_number):
