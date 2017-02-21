@@ -92,7 +92,7 @@ def teachers_class(lti=lti):
 	courseid = lti.user_id
 	myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
 	cHandler = myDB.cursor()
-	#cHandler.execute("SELECT c.fullname FROM mdl_course c WHERE c.id = %s", fullName)
+	
 	
 	cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid\
 	 FROM mdl_user u\
@@ -105,11 +105,22 @@ def teachers_class(lti=lti):
 	 WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
 	 AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid = %s", courseid)
 	results = cHandler.fetchall()
-	
+	results = list(results)
+	cHandler.execute("SELECT c.fullname FROM mdl_course c WHERE c.id = %s", courseid)
+	coursename=cHandler.fetchall()
+	for i in range(0,len(results)-1):
+		id=results[i][0]
+		results[i]=list(results[i])
+		results[i].append('1')
+		
+		cHandler.execute("SELECT sumgrades FROM mdl_quiz_attempts WHERE userid=%s ORDER BY timemodified DESC", id)
+		results[i][3]=cHandler.fetchall()
 	#Accès à la base de donnée locale du plugin
-	return render_template('displayStuds.html', results=results)
+			## A faire
+			
+	return render_template('displayStuds.html', results=results, coursename=coursename)
 	
-""" N'est plus d'actualité, on peut récuperer l'id du cours via lti """	
+""" N'est plus d'actualité, on peut récuperer l'id du cours via lti 
 # @app.route('/students_related',methods=['GET','POST'])
 # @lti(request='session', error=error, app=app)
 # def get_studs(lti=lti):
@@ -117,7 +128,7 @@ def teachers_class(lti=lti):
 	# course_number=4
 	# myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
 	# cHandler = myDB.cursor()
-	cHandler.execute("SELECT 
+    cHandler.execute("SELECT 
 	cHandler.execute("SELECT defaultgroupingid FROM mdl_course WHERE fullname='Recommendation'")
 	Liste des étudiants du cours sous la forme (userid, lastname, course id)
 	# cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid\
@@ -135,7 +146,7 @@ def teachers_class(lti=lti):
 	cHandler.execute("SELECT * FROM information_schema.tables WHERE TABLE_TYPE='BASE TABLE'")
 	# results = cHandler.fetchall()
 	# return render_template('photo.html', results=results)	
-	
+"""		
 """ Filtre html pour récuperer les élèves d'un cours, non utilisé pour le moment """
 @app.template_filter('get_students_from_course')
 @lti(request='session', error=error, app=app)
@@ -161,6 +172,7 @@ def get_studs(course_number):
 	#cHandler.execute("SELECT lastname FROM mdl_user WHERE mdl_user.id = 2 OR mdl_user.id = 3")
 	#cHandler.execute("SELECT * FROM information_schema.tables WHERE TABLE_TYPE='BASE TABLE'")
 	results = cHandler.fetchall()
+	
 	return render_template('photo.html', results=results)
 
 

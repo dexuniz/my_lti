@@ -1,14 +1,25 @@
 <!doctype html>
 <title>Élèves participants au cours</title>
-<h2>Elèves du cours</h2>
+<h2>Elèves du cours d'indentifiant {{coursename}}</h2>
 <h1>
-<table>
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+.tg .tg-yw4l{vertical-align:top}
+</style>
+<table class="tg">
+	<tr> 
+	<th class="tg-yw4l"> Identifiant de l'élève</th>
+    <th class="tg-yw4l"><br>Nom de l'élève</th>
+	<th class="tg-yw4l"><br>Notes au dernier quiz</th> 
+  </tr>
 {% for mot in results :%}
-
- <tr>
-   <th>mot[1]</th>
- </tr>
-
-{% endfor %}
+  <tr>  
+    <th class="tg-yw4l"><br>{{mot[0]}}</th>
+    <th class="tg-yw4l"> {{mot[1]}}</th>
+	<th class="tg-yw4l"><br>{{mot[3]}}</th>
+  </tr>
+  {% endfor %}
 </table>
 </h1>
