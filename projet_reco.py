@@ -114,7 +114,8 @@ def teachers_class(lti=lti):
 		results[i].append('1')
 		
 		cHandler.execute("SELECT sumgrades FROM mdl_quiz_attempts WHERE userid=%s ORDER BY timemodified DESC", id)
-		results[i][3]=cHandler.fetchall()
+		#A mod
+		results[i][3]=cHandler.fetchall()[0][0]
 	#Accès à la base de donnée locale du plugin
 			## A faire
 			
