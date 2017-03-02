@@ -39,5 +39,6 @@ def get_params(lti):
 			if len(grades) > 0:
 				results[i][3]=grades[0][0]
 			## A faire
+			## Retourner du  JSON
 			
 	return [coursename,results]

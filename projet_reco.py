@@ -114,16 +114,18 @@ def teachers_class(lti=lti):
 		results[i]=list(results[i])
 		
 		cHandler.execute("SELECT quiz FROM mdl_quiz_attempts WHERE userid=%s ORDER BY quiz", id)
+		results[i].append("Pas de notes")
 		quiz_id=cHandler.fetchall()
 		for num in quiz_id:
 			p=(id,num)
 			#Récupération des notes au quiz de numero num
-			cHandler.execute("SELECT sumgrades FROM mdl_quiz_attempts WHERE userid=%s AND quiz=%s ORDER BY quiz", p)
+			cHandler.execute("SELECT sumgrades FROM mdl_quiz_attempts WHERE userid=%(userid)s AND quiz=%(num)s ORDER BY quiz", {'userid': id, 'num': num[0]})
 			#Rajout d'une colone dans results pour les notes
 			results[i].append('Pas de note')
 			grades=cHandler.fetchall()
 			if len(grades) > 0:
 				results[i][3]=grades[0][0]
+				
 		#A mod
 		
 	#Accès à la base de donnée locale du plugin
