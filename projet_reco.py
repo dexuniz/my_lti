@@ -103,19 +103,29 @@ def teachers_class(lti=lti):
 	 JOIN mdl_course c ON c.id = ct.instanceid AND e.courseid = c.id\
 	 JOIN mdl_role r ON r.id = ra.roleid AND r.shortname = 'student'\
 	 WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
-	 AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid = %s", courseid)
+	 AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid = %s ORDER BY lastname", courseid)
 	results = cHandler.fetchall()
 	results = list(results)
 	cHandler.execute("SELECT c.fullname FROM mdl_course c WHERE c.id = %s", courseid)
 	coursename=cHandler.fetchall()
-	for i in range(0,len(results)-1):
+	for i in range(0,len(results)):
 		id=results[i][0]
+		#On convertit les tulpes en listes pour y ajouter des élèments
 		results[i]=list(results[i])
-		results[i].append('1')
 		
-		cHandler.execute("SELECT sumgrades FROM mdl_quiz_attempts WHERE userid=%s ORDER BY timemodified DESC", id)
+		cHandler.execute("SELECT quiz FROM mdl_quiz_attempts WHERE userid=%s ORDER BY quiz", id)
+		quiz_id=cHandler.fetchall()
+		for num in quiz_id:
+			p=(id,num)
+			#Récupération des notes au quiz de numero num
+			cHandler.execute("SELECT sumgrades FROM mdl_quiz_attempts WHERE userid=%s AND quiz=%s ORDER BY quiz", p)
+			#Rajout d'une colone dans results pour les notes
+			results[i].append('Pas de note')
+			grades=cHandler.fetchall()
+			if len(grades) > 0:
+				results[i][3]=grades[0][0]
 		#A mod
-		results[i][3]=cHandler.fetchall()[0][0]
+		
 	#Accès à la base de donnée locale du plugin
 			## A faire
 			
@@ -151,7 +161,7 @@ def teachers_class(lti=lti):
 """ Filtre html pour récuperer les élèves d'un cours, non utilisé pour le moment """
 @app.template_filter('get_students_from_course')
 @lti(request='session', error=error, app=app)
-def get_studs(course_number):
+def get_studs(lti=lti):
 
 	course_number=(course_number,)
 	myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
