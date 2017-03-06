@@ -17,5 +17,6 @@ pylti>=0.1.3
 uWSGI==2.0.7
 requests==2.0.1
 pillow
+json
 MySQL-python
 gadfly

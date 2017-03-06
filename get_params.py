@@ -1,10 +1,16 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*- 
 from pylti.flask import lti
+import json
+import pylti
+import MySQLdb
 
 def get_params(lti):
 	courseid = lti.user_id
 	myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
 	cHandler = myDB.cursor()
-	
+	results={} #dictionnaire qui sera utilisé pour générer du JSON
+	results["eleves"]=[] # Clef eleves qui renvoie toutes les informations sur les élèves
 	#Requete sql qui renvoie l'id, le nom de utilisateur ainsi que l'id du cours duquel il provient
 	cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid\
 	 FROM mdl_user u\
@@ -16,29 +22,42 @@ def get_params(lti):
 	 JOIN mdl_role r ON r.id = ra.roleid AND r.shortname = 'student'\
 	 WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
 	 AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid = %s ORDER BY lastname", courseid)
-	results = cHandler.fetchall()
-	#Conversion en liste necessaire pour modifier results qui est à la base un tulpe
-	results = list(results)
+	res = cHandler.fetchall()
 	#Requete SQL pour récuperer le nom du cours dans lequel le plugin est implanté
 	cHandler.execute("SELECT c.fullname FROM mdl_course c WHERE c.id = %s", courseid)
 	coursename=cHandler.fetchall()
-	for i in range(0,len(results)):
-		id=results[i][0]
-		#On convertit les tulpes en listes pour pouvoir ajouter des éléments
-		results[i]=list(results[i])
-		#On récupère la liste des quiz effectués par l'élève
+	for i in range(0,len(res)):
+		id=res[i][0]
+		
+		#initialisation
+		results["eleves"].append(dict())
+		
+		#Ajout du nom de l'eleve
+		results["eleves"][i]["nom"]=res[i][1]
+		results["eleves"][i]["id"]=id
+		
+		#Liste des identifiants des quiz effectués par l'élève
 		cHandler.execute("SELECT quiz FROM mdl_quiz_attempts WHERE userid=%s ORDER BY quiz", id)
+		
 		quiz_id=cHandler.fetchall()
+		
+		#initialisation
+		results["eleves"][i]["quiz"]=[]
+		
 		for num in quiz_id:
-			p=[(id,),(num,)]
+			num = num[0]
 			#Récupération des notes au quiz de numero num
-			cHandler.execute("SELECT sumgrades FROM mdl_quiz_attempts WHERE userid=%s AND quiz=%s ORDER BY quiz",(id,num))
-			#Rajout d'une colone dans results pour les notes
-			results[i].append('Pas de note')
+			cHandler.execute("SELECT sumgrades FROM mdl_quiz_attempts WHERE userid=%(userid)s \
+			AND quiz=%(num)s ORDER BY quiz",{'userid':id,'num':num})
+			
+			
+			#Récuperation du contenu de la requete
 			grades=cHandler.fetchall()
+			
 			if len(grades) > 0:
-				results[i][3]=grades[0][0]
-			## A faire
-			## Retourner du  JSON
+				results["eleves"][i]["quiz"].append((num,float(grades[0][0])))
+			
+		## Retourner du  JSON
+		results=json.dumps(results, ensure_ascii=False)
 			
 	return [coursename,results]
