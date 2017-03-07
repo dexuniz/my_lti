@@ -12,13 +12,15 @@
 	<tr> 
 	<th class="tg-yw4l"> Identifiant de l'élève</th>
     <th class="tg-yw4l"><br>Nom de l'élève</th>
-	<th class="tg-yw4l"><br>Notes au dernier quiz</th> 
+	<th class="tg-yw4l"><br>Notes au premier quiz</th> 
+	<th class="tg-yw4l"><br>Notes au deuxieme quiz</th> 
   </tr>
 {% for mot in results :%}
   <tr>  
     <th class="tg-yw4l"><br>{{mot[0]}}</th>
     <th class="tg-yw4l"> {{mot[1]}}</th>
 	<th class="tg-yw4l"><br>{{mot[3]}}</th>
+	<th class="tg-yw4l"><br>{{mot[4]}}</th>
   </tr>
   {% endfor %}
 </table>
