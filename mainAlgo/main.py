@@ -12,21 +12,27 @@ class Main():
     
     #--------------------------------------------------------------------------
 
-    def genererFE(self, eleve, theme, nbExercices=3):
-        """Génère une Feuille d'Exercices correspondant à un élève et à un 
-        thème"""
+    def genererQuiz(self, eleve, competencesTestees):
+        """Génère une Feuille d'Exercices correspondant à un élève et à des compétences"""
+        
         
         fe = []
+                      
+        # compétences requises
+        competencesRequises = []
+        for c in competencesTestees:
+            for cr in c.getPrerequis():
+                if (not cr in competencesRequises) and (eleve.niveauCompetences(cr.getId())<=1):
+                    competencesRequises.append(cr)
         
-        # generation triviale
-        i = 0
-        while len(fe)<=nbExercices and (i+1)<len(self.listeExercices):
-            exo = self.listeExercices[i]
-			for t in exo.themes:
-                if t.nbId == theme.nbId:
-                    fe.append(exo)
-            i+=1
-            
+        
+        # generation triviale avec 1 exercice par competence
+        for c in competencesRequises+competencesTestees:
+            exo = next(e for e in self.listeExercices if c in e.competences)
+            if not exo in fe:
+                fe.append(exo)
+
+        
         return fe
         
         
@@ -38,8 +44,9 @@ class Main():
         
     def ajouterExercice(exercice):
         """Ajoute un exercice à la base de donnée"""
+        pass
 		
-    #--------------------------------------------------------------------------
+    #-------------------------------------------------------------------------
 
 
         
@@ -49,11 +56,12 @@ if __name__ == "__main__":
     
     import exercice, theme, competence, etudiant
 
-    john = etudiant.Etudiant("John", "Smith", [0, 0])
 
     theme1 = theme.Theme(1, "Arithmétique")
-    competence1 = competence.Competence(1, "Addition", theme1)
-    competence2 = competence.Competence(2, "Soustraction", theme1)
+    competence1 = competence.Competence(1, "Addition", theme1, [])
+    competence2 = competence.Competence(2, "Soustraction", theme1, [competence1])
+
+    john = etudiant.Etudiant("John", "Smith", [0, 0])
 	
     
     ex1 = exercice.Exercice(1, "", ["3 + 4 ="], ["7"], [theme1], [competence1])
@@ -63,7 +71,13 @@ if __name__ == "__main__":
     
     
     main = Main([john], [theme1], [competence1, competence2], [ex1, ex2, ex3, ex4])
-    fe = main.genererFE(john, theme1)
+    
+    fe1 = main.genererQuiz(john, [competence1])
+    fe2 = main.genererQuiz(john, [competence2])
 
-    for exo in fe:
+    print("FE Addition")
+    for exo in fe1:
+        exo.afficherEnonce()
+    print("FE Soustraction")
+    for exo in fe2:
         exo.afficherEnonce()

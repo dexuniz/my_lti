@@ -2,9 +2,9 @@ class Theme():
     """Thème de mathématiques 
     comme par exemple Arithmétique"""
 
-    def __init__(self, nbId, nom):
+    def __init__(self, nId, nom):
         self.nom = nom
-        self.nbId = nbId
+        self.nbId = nId
 
         
         

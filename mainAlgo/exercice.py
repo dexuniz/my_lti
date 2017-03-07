@@ -1,7 +1,8 @@
 class Exercice():
     """Exercice lambda	"""
 
-    def __init__(self, nbId, enonce, questions, reponses, themes, competences):
+    def __init__(self, nId, enonce, questions, reponses, themes, competences):
+        self.nId = nId
         self.enonce = enonce
         self.questions = questions
         self.reponses = reponses
