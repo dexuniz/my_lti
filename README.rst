@@ -1,2 +1,2 @@
 Ceci est la base pour une communication sécurisée avec moodle.
-Documentation à venir.
+Documentation : https://sites.google.com/view/projetrecommendation/accueil.
