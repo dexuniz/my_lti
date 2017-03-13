@@ -20,3 +20,4 @@ pillow
 json
 MySQL-python
 gadfly
+json2html
