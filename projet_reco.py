@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*- 
 import os
 import sys
-import requests
-from flask import Flask, redirect,url_for , send_from_directory, render_template
+from flask import Flask, redirect,url_for , send_from_directory, render_template, request, flash
 from flask import render_template
+from werkzeug.utils import secure_filename
 import urllib
 import sqlite3
 from pylti.flask import lti
@@ -12,8 +12,12 @@ import MySQLdb
 from get_params import get_params
 
 VERSION = '0.0.5'
+UPLOAD_FOLDER='exos/'
+ALLOWED_EXTENSIONS=set(['xlsx'])
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
 app.config.from_object('config')
+
 
 
 
@@ -57,6 +61,37 @@ def index_staff(lti=lti):
     """
     return render_template('staff.html', lti=lti)
 
+#Permet de restrindre les uploads à un format excel
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    
+@app.route('/upload_exo', methods=['GET','POST'])
+@lti(request='session', error=error, role='staff', app=app)
+def upload_exo(lti=lti):
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser will
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_exo',
+                                    filename=filename))
+        if file and not allowed_file(file.filename):
+            flash('Mauvais format, les formats possibles sont : ' + str(ALLOWED_EXTENSIONS).split('set([')[-1].split('])')[0])
+    return render_template('testupload.html', lti=lti)
+
+@app.route('/exos/<filename>')
+def uploaded_exo(filename):
+    return render_template('upload_reussit.html',lti=lti)
 
 @app.route('/add', methods=['GET'])
 @lti(request='session', error=error, app=app)
