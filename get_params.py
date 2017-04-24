@@ -59,6 +59,9 @@ def get_params(lti):
                 results["eleves"][i]["quiz"].append((num,float(grades[0][0])))
     			
             ## Retourner du  JSON
-    results=json.dumps(results, ensure_ascii=False)
+    results=json.dumps(results, indent=4)
+    with open('data.json', 'w') as f:
+        f.write(results)
+    
 			
     return [coursename,results]

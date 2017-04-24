@@ -2,18 +2,23 @@
 # -*- coding: utf-8 -*- 
 import os
 import sys
-import requests
-from flask import Flask, redirect,url_for , send_from_directory, render_template
+from flask import Flask, redirect,url_for , send_from_directory, render_template, request, flash
 from flask import render_template
+from werkzeug.utils import secure_filename
 import urllib
 import sqlite3
 from pylti.flask import lti
 import MySQLdb
 from get_params import get_params
+import xlrd
 
 VERSION = '0.0.5'
+UPLOAD_FOLDER='exos/'
+ALLOWED_EXTENSIONS=set(['xlsx'])
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
 app.config.from_object('config')
+
 
 
 
@@ -57,6 +62,91 @@ def index_staff(lti=lti):
     """
     return render_template('staff.html', lti=lti)
 
+#Permet de restrindre les uploads à un format excel
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    
+@app.route('/upload_exo', methods=['GET','POST'])
+@lti(request='session', error=error, role='staff', app=app)
+def upload_exo(lti=lti):
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser will
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            #filename = secure_filename(file.filename)
+            file.name='bdd_exos'
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'bdd.xlsx'))
+            return redirect(url_for('majDB'))
+        if file and not allowed_file(file.filename):
+            flash('Mauvais format, les formats possibles sont : ' + str(ALLOWED_EXTENSIONS).split('set([')[-1].split('])')[0])
+    return render_template('testupload.html', lti=lti)
+    
+@app.route('/maj_db', methods=['GET','POST'])
+@lti(request='session', error=error, role='staff', app=app)
+def majDB(lti=lti):
+    database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
+    cHandler = database.cursor() 
+    cHandler.execute("DELETE FROM mdl_exos_recommendation")
+    cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_recommendation (num_exo integer, theme integer, savoir_faire integer)")
+    # Open the workbook and define the worksheet
+    book = xlrd.open_workbook("./exos/bdd.xlsx")
+    sheets=book.sheet_names()
+    sheet1 = book.sheet_by_name(sheets[1])
+    sheet2 = book.sheet_by_name(sheets[2])
+    # Get the cursor, which is used to traverse the database, line by line
+    cursor = database.cursor()
+
+    # Create the INSERT INTO sql query
+    query = """INSERT INTO mdl_exos_recommendation (num_exo, theme) VALUES (%s, %s)"""
+#    WHERE NOT EXISTS (SELECT * FROM mdl_exos_recommendation WHERE num_exo=%s AND theme=%s)"""
+    
+    # Tableau pour stocker les différents savoirs faire associés aux exercices
+    tab_sf=[]
+    tab_sf.append([])
+    num_exo=[]
+    theme=[]
+    # Create a For loop to iterate through each row in the XLS file, starting at row 2 to skip the headers
+    for r in range(1, sheet1.nrows):
+        num_exo = int(sheet1.cell(r,0).value)
+        theme = int(sheet1.cell(r,1).value)
+        cursor.execute(query,(num_exo,theme))
+    for r in range(1, sheet2.nrows):
+        tab_sf.append([])
+        tab_sf[int(sheet2.cell(r,0).value)].append(int(sheet2.cell(r,1).value))
+    
+    #Remplissage des savoir_faire
+    for r in range(1,sheet1.nrows):
+        for j in range(0,len(tab_sf[r])):
+            value=tab_sf[r][j]
+            cursor.execute("INSERT INTO mdl_exos_recommendation (num_exo, savoir_faire) VALUES (%s,%s)", \
+                       (r,value))      
+        
+    # On supprime le fichier telechargé pour ne pas avoir de conflits lors d'une mise a jour
+    #os.remove(".exos/bdd.xlsx")
+    
+    # Close the cursor
+    cursor.close()
+
+    # Commit the transaction
+    database.commit()
+
+    # Close the database connection
+    database.close()
+    return render_template()
+
+@app.route('/exos/<filename>')
+@lti(request='session', error=error, role='staff', app=app)
+def uploaded_exo(filename,lti=lti):
+    return render_template('upload_reussit.html',lti=lti)
 
 @app.route('/add', methods=['GET'])
 @lti(request='session', error=error, app=app)
@@ -71,20 +161,6 @@ def add_form(lti=lti):
     form.p2.data = randint(1, 9)
     return render_template('add.html', form=form)
 
-
-@app.route('/grade', methods=['POST'])
-@lti(request='session', error=error, app=app)
-def grade(lti=lti):
-    """ Test pour poster une note
-
-    :param lti: the `lti` object from `pylti`
-    :return: grade rendered by grade.html template
-    """
-    form = AddForm()
-    correct = ((form.p1.data + form.p2.data) == form.result.data)
-    form.correct.data = correct
-    #lti.post_grade(1 if correct else 0)
-    return render_template('grade.html', form=form)
 	
 	
 @app.route('/teacher',methods=['GET','POST'])
@@ -94,61 +170,6 @@ def teachers_class(lti=lti):
 			
 	return render_template('displayStuds2.html', results=results, coursename=coursename)
 	
-""" N'est plus d'actualité, on peut récuperer l'id du cours via lti 
-# @app.route('/students_related',methods=['GET','POST'])
-# @lti(request='session', error=error, app=app)
-# def get_studs(lti=lti):
-
-	# course_number=4
-	# myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
-	# cHandler = myDB.cursor()
-    cHandler.execute("SELECT 
-	cHandler.execute("SELECT defaultgroupingid FROM mdl_course WHERE fullname='Recommendation'")
-	Liste des étudiants du cours sous la forme (userid, lastname, course id)
-	# cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid\
-	 # FROM mdl_user u\
-	 # JOIN mdl_user_enrolments ue ON ue.userid = u.id\
-	 # JOIN mdl_enrol e ON e.id = ue.enrolid\
-	 # JOIN mdl_role_assignments ra ON ra.userid = u.id\
-	 # JOIN mdl_context ct ON ct.id = ra.contextid AND ct.contextlevel = 50\
-	 # JOIN mdl_course c ON c.id = ct.instanceid AND e.courseid = c.id\
-	 # JOIN mdl_role r ON r.id = ra.roleid AND r.shortname = 'student'\
-	 # WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
-	 # AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid = %s", course_number)
-	cHandler.execute("SELECT id FROM mdl_user_enrolments WHERE mdl_user_enrolments.enrolid = '7L'")
-	cHandler.execute("SELECT lastname FROM mdl_user WHERE mdl_user.id = 2 OR mdl_user.id = 3")
-	cHandler.execute("SELECT * FROM information_schema.tables WHERE TABLE_TYPE='BASE TABLE'")
-	# results = cHandler.fetchall()
-	# return render_template('photo.html', results=results)	
-"""		
-""" Filtre html pour récuperer les élèves d'un cours, non utilisé pour le moment """
-@app.template_filter('get_students_from_course')
-@lti(request='session', error=error, app=app)
-def get_studs(lti=lti):
-
-	course_number=(course_number,)
-	myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
-	cHandler = myDB.cursor()
-	#cHandler.execute("SELECT 
-	#cHandler.execute("SELECT defaultgroupingid FROM mdl_course WHERE fullname='Recommendation'")
-	#Liste des étudiants du cours sous la forme (userid, lastname, course id)
-	cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid\
-	 FROM mdl_user u\
-	 JOIN mdl_user_enrolments ue ON ue.userid = u.id\
-	 JOIN mdl_enrol e ON e.id = ue.enrolid\
-	 JOIN mdl_role_assignments ra ON ra.userid = u.id\
-	 JOIN mdl_context ct ON ct.id = ra.contextid AND ct.contextlevel = 50\
-	 JOIN mdl_course c ON c.id = ct.instanceid AND e.courseid = c.id\
-	 JOIN mdl_role r ON r.id = ra.roleid AND r.shortname = 'student'\
-	 WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
-	 AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid = ?", course_number)
-	#cHandler.execute("SELECT id FROM mdl_user_enrolments WHERE mdl_user_enrolments.enrolid = '7L'")
-	#cHandler.execute("SELECT lastname FROM mdl_user WHERE mdl_user.id = 2 OR mdl_user.id = 3")
-	#cHandler.execute("SELECT * FROM information_schema.tables WHERE TABLE_TYPE='BASE TABLE'")
-	results = cHandler.fetchall()
-	
-	return render_template('photo.html', results=results)
-
 
 def set_debugging():
     """ Debuggage du logging
