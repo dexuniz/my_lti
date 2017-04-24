@@ -51,6 +51,14 @@ def index(lti=lti):
     """
     return render_template('index.html', lti=lti)
 
+@app.route('/index2', methods=['GET', 'POST'])
+@lti(request='session', error=error, app=app)
+def index2(lti=lti):
+    """ Page d'acceuil2, permet de rediriger l'utilisateur.
+
+    """
+    return render_template('index.html', lti=lti)
+
 
 @app.route('/index_staff', methods=['GET', 'POST'])
 @lti(request='session', error=error, role='staff', app=app)
@@ -95,8 +103,8 @@ def upload_exo(lti=lti):
 def majDB(lti=lti):
     database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = database.cursor() 
-    cHandler.execute("DELETE FROM mdl_exos_recommendation")
     cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_recommendation (num_exo integer, theme integer, savoir_faire integer)")
+    cHandler.execute("DELETE FROM mdl_exos_recommendation")    
     # Open the workbook and define the worksheet
     book = xlrd.open_workbook("./exos/bdd.xlsx")
     sheets=book.sheet_names()
@@ -141,13 +149,69 @@ def majDB(lti=lti):
 
     # Close the database connection
     database.close()
-    return render_template()
-
-@app.route('/exos/<filename>')
+    return render_template("upload_reussit.html",lti=lti)
+    
+@app.route('/see_competences', methods=['GET','POST'])
 @lti(request='session', error=error, role='staff', app=app)
-def uploaded_exo(filename,lti=lti):
-    return render_template('upload_reussit.html',lti=lti)
+def see_competences(lti=lti):
+    # L'utilisateur tape le numero de l'exo dont il désir avoir les compétences
+    return render_template('see_competences.html',lti=lti)
+    
 
+@app.route('/competences', methods=['GET','POST'])
+@lti(request='session', error=error, app=app)
+def competences(lti=lti):
+    # Contrôles sur le numéro de l'exo à faire : pas trop grand, si négatif
+    data=request.form['numero_exo']
+    if data == '':
+            flash('Entrez un numero')
+            return redirect(request.url)
+    database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
+    cHandler = database.cursor() 
+    cHandler.execute("SELECT DISTINCT savoir_faire FROM mdl_exos_recommendation WHERE num_exo=%s",data)
+    results=cHandler.fetchall()
+    resultats=[]
+    for items in results[1:]:
+        resultats.append(str(items[0]))
+    return render_template("competences.html",lti=lti, resultats=resultats,num=data)
+    
+@app.route('/see_exos', methods=['GET','POST'])
+@lti(request='session', error=error, role='staff', app=app)
+def see_exos(lti=lti):
+    # L'utilisateur tape le numero de l'exo dont il désire avoir les compétences
+    return render_template('see_exos.html',lti=lti)
+    
+
+@app.route('/exos', methods=['GET','POST'])
+@lti(request='session', error=error, app=app)
+def exos(lti=lti):
+    # Contrôles sur le numéro de la competence à faire : pas trop grand, si négatif
+    data1=request.form['numero_comp1']
+    data2=request.form['numero_comp2']
+    if data1 == '':
+            flash('Entrez un numero dans la case 1 en priorité')
+            return redirect(request.url)
+    database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
+    cHandler = database.cursor() 
+    if data1 and data2=='':
+        cHandler.execute("SELECT num_exo FROM mdl_exos_recommendation WHERE savoir_faire=%s",(data1))
+        results=cHandler.fetchall()
+        resultats=[]
+        for items in results:
+            resultats.append(str(items[0]))
+        return render_template("exos.html",lti=lti, resultats=resultats,num1=data1)
+    if data1 and not data2=='':
+        cHandler.execute("SELECT m1.num_exo FROM mdl_exos_recommendation m1 JOIN\
+                         mdl_exos_recommendation m2 ON\
+                         m1.num_exo = m2.num_exo AND m2.savoir_faire = %s WHERE \
+                         m1.savoir_faire = %s",(data1,data2))
+        results=cHandler.fetchall()
+        resultats=[]
+        for items in results:
+            resultats.append(str(items[0]))
+        return render_template("exos2.html",lti=lti, resultats=resultats,num1=data1, num2=data2)
+    return render_template('see_exos.html',lti=lti)
+    
 @app.route('/add', methods=['GET'])
 @lti(request='session', error=error, app=app)
 def add_form(lti=lti):
