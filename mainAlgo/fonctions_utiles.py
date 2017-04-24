@@ -32,3 +32,15 @@ def vraisemblance(questions, beta, theta, diff, matQ, reponses):
     for i in range(len(questions)):
         L = L*proba_reponse(beta, theta, diff[i], matQ[i], reponses[i])
     return L
+
+
+def esperanceVraisemblance(questions, questionsChoisies, beta, theta, beta2, theta2, diff, matQ, matQChoisie, reponses):
+    L = 1
+    # questions contient la liste des questions répondues
+    for i in range(len(questions)):
+        L = L*proba_reponse(beta, theta, diff[i], matQ[i], reponses[i])
+    for qc in questionsChoisies:
+        p = proba_juste(beta, theta, qc.difficulte, matQChoisie)
+        p2 = proba_juste(beta2, theta2, qc.difficulte, matQChoisie)
+        L = L * (p*p2 + (1-p)*(1-p2))
+    return L

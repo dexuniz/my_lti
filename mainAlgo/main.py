@@ -1,4 +1,4 @@
-from fonctions_utiles import vraisemblance
+from fonctions_utiles import vraisemblance, esperanceVraisemblance
 import scipy
 import json
 
@@ -53,14 +53,44 @@ class Main():
         diff = [q.difficulte for q in questions]
         matriceQ = [[1 if k in q.competences else 0 for k in self.competences] for q in questions]
         
+        bnds = [[-10, 10]]*(len(self.competences)+1)
         f = lambda x : -vraisemblance(questions, x[0], x[1:], diff, matriceQ, reponses)
-        niveaux = scipy.optimize.minimize(f, [0]*(len(self.competences)+1))
+        niveaux = scipy.optimize.minimize(f, [0]*(len(self.competences)+1), bounds=bnds)
         print(niveaux.x)
         print(-niveaux.fun)
         etudiant.setCapacite(niveaux.x[0])
         etudiant.setNiveaux(list(niveaux.x[1:]))
         
+        
+        
+    def vraisemblance(self, etudiant, beta, theta):
+        questions = [self.questions[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
+        reponses = [etudiant.questionsRepondues[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
+        diff = [q.difficulte for q in questions]
+        matriceQ = [[1 if k in q.competences else 0 for k in self.competences] for q in questions]
+        
+        v = vraisemblance(questions, beta, theta, diff, matriceQ, reponses)
+        return(v)
+        
     
+    def choisirQuestion(self, etudiant, betaTemp, thetaTemp, competences):
+        maxProgres = 0
+        choixQuestion = None
+        for questionChoisie in self.questions:
+            if [k for k in questionChoisie.competences if k in competences] != []:
+                questionsRepondues = [self.questions[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
+                reponses = [etudiant.questionsRepondues[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
+                diff = [q.difficulte for q in questionsRepondues]
+                matriceQ = [[1 if k in q.competences else 0 for k in self.competences] for q in questionsRepondues]
+                matQChoisie = [1 if k in questionChoisie.competences else 0 for k in self.competences]
+                bnds = [[-10, 10]]*(len(self.competences)+1)
+                f = lambda x : -esperanceVraisemblance(questionsRepondues, [questionChoisie], x[0], x[1:], betaTemp, thetaTemp, diff, matriceQ, matQChoisie, reponses)
+                niveaux = scipy.optimize.minimize(f, [0]*(len(self.competences)+1), bounds=bnds)
+                progres = sum([niveaux.x[c.nId+1]-thetaTemp[c.nId] for c in competences])
+                if progres >= maxProgres:
+                    maxProgres = progres
+                    choixQuestion = questionChoisie
+        return choixQuestion
     
 
     #--------------------------------------------------------------------------
@@ -102,16 +132,15 @@ if __name__ == "__main__":
     competence2 = competence.Competence(2, "Soustraction", theme1, [competence1])
     competence3 = competence.Competence(3, "", theme1, [])
 
-    bob = etudiant.Etudiant("John", "Smith", [0, 0], 0)
-	
+    bob = etudiant.Etudiant("John", "Smith", [0, 0, 0], 0)
     
     q0 = question.Question(0, "3 + 4 =", "7", [theme1], [competence1])
     q1 = question.Question(1, "2 + 5 =", "7", [theme1], [competence1])
-    q2 = question.Question(2, "", "", [theme1], [competence2])
-    q3 = question.Question(3, "", "", [theme1], [competence2])
-    q4 = question.Question(4, "", "", [theme1], [competence1, competence2])
-    q5 = question.Question(5, "", "", [theme1], [competence1, competence2])
-    q6	= question.Question(6, "", "", [theme1], [competence3])
+    q2 = question.Question(2, "", "", [theme1], [competence1,competence2])
+    q3 = question.Question(3, "", "", [theme1], [competence1])
+    q4 = question.Question(4, "", "", [theme1], [competence1])
+    q5 = question.Question(5, "", "", [theme1], [competence1])
+    q6	= question.Question(6, "", "", [theme1], [competence2])
     
     
     main = Main([bob], [theme1], [competence1, competence2, competence3], [q0,q1,q2,q3,q4,q5,q6])
