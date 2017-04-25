@@ -61,7 +61,7 @@ def index2(lti=lti):
 
 
 @app.route('/index_staff', methods=['GET', 'POST'])
-@lti(request='session', error=error, role='staff', app=app)
+@lti(request='session', error=error, app=app)
 def index_staff(lti=lti):
     """ Affiche le template staff.html
 
@@ -103,7 +103,7 @@ def upload_exo(lti=lti):
 def majDB(lti=lti):
     database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = database.cursor() 
-    cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_recommendation (num_exo integer, theme integer, savoir_faire integer)")
+    cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_recommendation (num_exo integer, theme integer, savoir_faire integer, cours_id integer)")
     cHandler.execute("DELETE FROM mdl_exos_recommendation")    
     # Open the workbook and define the worksheet
     book = xlrd.open_workbook("./exos/bdd.xlsx")
@@ -112,9 +112,9 @@ def majDB(lti=lti):
     sheet2 = book.sheet_by_name(sheets[2])
     # Get the cursor, which is used to traverse the database, line by line
     cursor = database.cursor()
-
+    cours_id = lti.user_id
     # Create the INSERT INTO sql query
-    query = """INSERT INTO mdl_exos_recommendation (num_exo, theme) VALUES (%s, %s)"""
+    query = """INSERT INTO mdl_exos_recommendation (num_exo, theme, cours_id) VALUES (%s, %s, %s)"""
 #    WHERE NOT EXISTS (SELECT * FROM mdl_exos_recommendation WHERE num_exo=%s AND theme=%s)"""
     
     # Tableau pour stocker les différents savoirs faire associés aux exercices
@@ -123,20 +123,21 @@ def majDB(lti=lti):
     num_exo=[]
     theme=[]
     # Create a For loop to iterate through each row in the XLS file, starting at row 2 to skip the headers
-    for r in range(1, sheet1.nrows):
-        num_exo = int(sheet1.cell(r,0).value)
-        theme = int(sheet1.cell(r,1).value)
-        cursor.execute(query,(num_exo,theme))
+#    for r in range(1, sheet1.nrows):
+#        num_exo = int(sheet1.cell(r,0).value)
+#        
+#        cursor.execute(query,(num_exo,theme,cours_id))
     for r in range(1, sheet2.nrows):
         tab_sf.append([])
         tab_sf[int(sheet2.cell(r,0).value)].append(int(sheet2.cell(r,1).value))
     
     #Remplissage des savoir_faire
     for r in range(1,sheet1.nrows):
+        theme = int(sheet1.cell(r,1).value)
         for j in range(0,len(tab_sf[r])):
             value=tab_sf[r][j]
-            cursor.execute("INSERT INTO mdl_exos_recommendation (num_exo, savoir_faire) VALUES (%s,%s)", \
-                       (r,value))      
+            cursor.execute("INSERT INTO mdl_exos_recommendation (num_exo, savoir_faire, cours_id, theme) VALUES (%s,%s,%s,%s)", \
+                       (r,value,cours_id,theme))      
         
     # On supprime le fichier telechargé pour ne pas avoir de conflits lors d'une mise a jour
     #os.remove(".exos/bdd.xlsx")
@@ -168,7 +169,8 @@ def competences(lti=lti):
             return redirect(request.url)
     database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = database.cursor() 
-    cHandler.execute("SELECT DISTINCT savoir_faire FROM mdl_exos_recommendation WHERE num_exo=%s",data)
+    cours_id = lti.user_id
+    cHandler.execute("SELECT DISTINCT savoir_faire FROM mdl_exos_recommendation WHERE num_exo=%s AND cours_id=%s",(data,cours_id))
     results=cHandler.fetchall()
     resultats=[]
     for items in results[1:]:
@@ -193,8 +195,9 @@ def exos(lti=lti):
             return redirect(request.url)
     database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = database.cursor() 
+    cours_id = lti.user_id
     if data1 and data2=='':
-        cHandler.execute("SELECT num_exo FROM mdl_exos_recommendation WHERE savoir_faire=%s",(data1))
+        cHandler.execute("SELECT num_exo FROM mdl_exos_recommendation WHERE savoir_faire=%s AND cours_id = %s",(data1,cours_id))
         results=cHandler.fetchall()
         resultats=[]
         for items in results:
@@ -204,7 +207,7 @@ def exos(lti=lti):
         cHandler.execute("SELECT m1.num_exo FROM mdl_exos_recommendation m1 JOIN\
                          mdl_exos_recommendation m2 ON\
                          m1.num_exo = m2.num_exo AND m2.savoir_faire = %s WHERE \
-                         m1.savoir_faire = %s",(data1,data2))
+                         m1.savoir_faire = %s AND m1.cours_id=%s",(data1,data2,cours_id))
         results=cHandler.fetchall()
         resultats=[]
         for items in results:
@@ -212,23 +215,8 @@ def exos(lti=lti):
         return render_template("exos2.html",lti=lti, resultats=resultats,num1=data1, num2=data2)
     return render_template('see_exos.html',lti=lti)
     
-@app.route('/add', methods=['GET'])
-@lti(request='session', error=error, app=app)
-def add_form(lti=lti):
-    """ Page d'acces pour le lti consumer
-
-    :param lti: the `lti` object from `pylti`
-    :return: index page for lti provider
-    """
-    form = AddForm()
-    form.p1.data = randint(1, 9)
-    form.p2.data = randint(1, 9)
-    return render_template('add.html', form=form)
-
-	
-	
 @app.route('/teacher',methods=['GET','POST'])
-@lti(request='session', error=error, app=app)
+@lti(request='session', error=error,role = 'staff', app=app)
 def teachers_class(lti=lti):
 	[coursename,results] = get_params(lti)
 			
