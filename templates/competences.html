@@ -1,4 +1,11 @@
 <!doctype html>
+	<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+	</head>
     <h1>Compétences de l'exercice {{num}}</h1>
-    <h2>{{resultats}}</h2>
-	<a href="{{ url_for('index2') }}">Retour à l'index</a>
+	{%for res in resultats%}
+    
+	{{res}}
+	<br>
+	{%endfor%}
+	<a href="{{ url_for('index2') }}">Retour à l'index</a>	

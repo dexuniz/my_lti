@@ -1,4 +1,14 @@
 <!doctype html>
+<head>
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
+  });
+</script>
+	</head>
     <h1>Exos correspondant à la compétence {{num1}}</h1>
-    <h2>{{resultats}}</h2>
+    <p>{{resultats[0]}}</p>
 	<a href="{{ url_for('index2') }}">Retour à l'index</a>

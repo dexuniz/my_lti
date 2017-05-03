@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-from pylti.flask import lti
 import json
-import pylti
 import MySQLdb
 
 def get_params(lti):
@@ -12,7 +10,7 @@ def get_params(lti):
     results={} #dictionnaire qui sera utilisé pour générer du JSON
     results["eleves"]=[] # Clef eleves qui renvoie toutes les informations sur les élèves
     #Requete sql qui renvoie l'id, le nom de utilisateur ainsi que l'id du cours duquel il provient
-    cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid\
+    cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, c.id AS courseid, u.firstname AS firstname\
 	FROM mdl_user u\
 	JOIN mdl_user_enrolments ue ON ue.userid = u.id\
 	JOIN mdl_enrol e ON e.id = ue.enrolid\
@@ -35,7 +33,7 @@ def get_params(lti):
         #Ajout du nom de l'eleve
         # results["eleves"][i]["nom"]=res[i][1]
         # results["eleves"][i]["id"]=id
-        d = { 'nom': res[i][1], 'id': id }
+        d = { 'nom': res[i][1], 'id': id, 'prenom':res[i][3] }
         results['eleves'].append(d)
         #Liste des identifiants des quiz effectués par l'élève
         cHandler.execute("SELECT quiz FROM mdl_quiz_attempts WHERE userid=%s ORDER BY quiz", id)
@@ -62,6 +60,9 @@ def get_params(lti):
     results=json.dumps(results, indent=4)
     with open('data.json', 'w') as f:
         f.write(results)
+        f.close()
+    with open('data.json','r') as data_file:
+        jsondata=json.load(data_file)
     
 			
-    return [coursename,results]
+    return [coursename,jsondata]

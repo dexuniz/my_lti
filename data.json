@@ -2,36 +2,21 @@
     "eleves": [
         {
             "nom": "ALBERT", 
+            "quiz": [], 
             "id": 2, 
-            "quiz": [
-                [
-                    1, 
-                    0.0
-                ], 
-                [
-                    2, 
-                    -10.0
-                ]
-            ]
+            "prenom": "Paul"
         }, 
         {
             "nom": "ALBERT", 
+            "quiz": [], 
             "id": 4, 
-            "quiz": []
+            "prenom": "Paul"
         }, 
         {
             "nom": "leprof", 
+            "quiz": [], 
             "id": 3, 
-            "quiz": [
-                [
-                    2, 
-                    -10.0
-                ], 
-                [
-                    2, 
-                    -10.0
-                ]
-            ]
+            "prenom": "Paul"
         }
     ]
 }

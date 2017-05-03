@@ -3,17 +3,20 @@
     <title>MIT LTI Flask Sample</title>
 </head>
 <body>
-<h1>Hello {{ lti.name }}.</h1>
+<h1>Bonjour {{ lti.name }}.</h1>
 
-<a href="{{ url_for('see_competences') }}">Voir à quelles compétences correspondent un exercice</a>
-<br>	
-<a href="{{ url_for('see_exos') }}">Voir à quels exercices correspondent des compétences</a>
+<a href="{{ url_for('index_staff') }}">Vérifier votre rôle</a>
 <br>
 <a href="{{ url_for('teachers_class') }}">Voir vos élèves </a>
 <br>
-<a href="{{ url_for('upload_exo') }}">Upload un(des) exercices(s)</a>
+<a href="{{ url_for('upload_exo') }}">Upload des exercices (tableau excel)</a>
 <br>
-<a href="{{ url_for('index_staff') }}">Vérifier votre rôle</a>
+<a href="{{ url_for('upload_latex') }}">Upload une fiche d'exercices (en LaTeX)</a>
+<br>
+<a href="{{ url_for('see_competences') }}">Voir à quelles compétences correspondent un exercice</a>
+<br>	
+<a href="{{ url_for('see_exos') }}">Voir à quels exercices correspondent des compétences</a>
+
 
 </body>
 </html>
