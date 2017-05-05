@@ -4,18 +4,20 @@
 </head>
 <body>
 <h1>Bonjour {{ lti.name }}.</h1>
-
+<h2> Administration </h2>
 <a href="{{ url_for('index_staff') }}">Vérifier votre rôle</a>
 <br>
 <a href="{{ url_for('teachers_class') }}">Voir vos élèves </a>
 <br>
+<h2> Exercices </h2>
 <a href="{{ url_for('upload_exo') }}">Upload des exercices (tableau excel)</a>
 <br>
 <a href="{{ url_for('upload_latex') }}">Upload une fiche d'exercices (en LaTeX)</a>
-<br>
-<a href="{{ url_for('see_competences') }}">Voir à quelles compétences correspondent un exercice</a>
 <br>	
 <a href="{{ url_for('see_exos') }}">Voir à quels exercices correspondent des compétences</a>
+<br>
+<a href="{{ url_for('see_competences') }}">Voir à quelles compétences correspondent un exercice</a>
+
 
 
 </body>

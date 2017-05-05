@@ -43,4 +43,5 @@ def get_exo(num_exo):
         return data[:pos_fin3+10]
     if pos_fin1==-1:
         return data[:-14]
-    return data[:pos_fin1+10]
+    exotraite = data[:pos_fin1+10]
+    return exotraite

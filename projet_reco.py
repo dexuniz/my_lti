@@ -245,22 +245,28 @@ def exos(lti=lti):
     cHandler = database.cursor() 
     cours_id = lti.user_id
     if data1 and data2=='':
-        cHandler.execute("SELECT num_exo FROM mdl_exos_recommendation WHERE savoir_faire=%s AND cours_id = %s",(data1,cours_id))
+        cHandler.execute("SELECT num_exo FROM mdl_exos_recommendation WHERE id_savoir_faire=%s AND cours_id = %s",(data1,cours_id))
         results=cHandler.fetchall()
         resultats=[]
+        num_resultats=[]
         for items in results:
             resultats.append(get_exo(str(items[0])))
-        return render_template("exos.html",lti=lti, resultats=resultats,num1=data1)
+            num_resultats.append(str(items[0]))
+        return render_template("exos.html",lti=lti, num_resultats=num_resultats, resultats=resultats,num1=data1)
     if data1 and not data2=='':
         cHandler.execute("SELECT m1.num_exo FROM mdl_exos_recommendation m1 JOIN\
                          mdl_exos_recommendation m2 ON\
-                         m1.num_exo = m2.num_exo AND m2.savoir_faire = %s WHERE \
-                         m1.savoir_faire = %s AND m1.cours_id=%s",(data1,data2,cours_id))
+                         m1.num_exo = m2.num_exo AND m2.id_savoir_faire = %s WHERE \
+                         m1.id_savoir_faire = %s AND m1.cours_id=%s",(data1,data2,cours_id))
         results=cHandler.fetchall()
         resultats=[]
+        num_resultats=[]
         for items in results:
             resultats.append(get_exo(str(items[0])))
-        return render_template("exos2.html",lti=lti, resultats=resultats,num1=data1, num2=data2)
+            num_resultats.append(str(items[0]))
+        macros=open('./macro2.tex').read()
+        
+        return render_template("exos2.html",lti=lti, macros=macros, num_resultats=num_resultats, resultats=resultats,num1=data1, num2=data2)
     return render_template('see_exos.html',lti=lti)
     
 @app.route('/teacher',methods=['GET','POST'])

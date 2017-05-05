@@ -8,13 +8,27 @@
 </script>
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
-    tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
+    tex2jax: {
+	inlineMath: [['$','$'],['\\(','\\)']]
+	}
   });
 </script>
-	</head>
     <h1>Exos correspondant à la compétence {{num1}} et {{num2}}</h1>
-	
-    {% for message in resultats %}
-      {{message}}	  
-    {% endfor %}
+	<h1>Numéro des exos</h1>
+
+	{%for num in num_resultats%}
+		{{num}} -
+	{%endfor%}
+	<br>
+		<h1>Énoncés</h1>
+	<div style="display:true">
+	$
+	{{macros}}
+	$
+    </div>
+	{%for en in resultats%}
+    <p>{{en}}</p>
+	<br>
+	{%endfor%}
 	<a href="{{ url_for('index2') }}">Retour à l'index</a>
+	

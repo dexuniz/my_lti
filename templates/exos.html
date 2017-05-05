@@ -10,5 +10,13 @@
 </script>
 	</head>
     <h1>Exos correspondant à la compétence {{num1}}</h1>
-    <p>{{resultats[0]}}</p>
+	<h1>Numéro des exos</h1>
+	{%for num in num_resultats%}
+		{{num}}
+	{%endfor%}
+	<h1>Énoncés</h1>
+	{%for en in resultats%}
+    <p>{{en}}</p>
+	<br>
+	{%endfor%}
 	<a href="{{ url_for('index2') }}">Retour à l'index</a>
