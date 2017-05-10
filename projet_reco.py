@@ -192,7 +192,7 @@ def latex(lti=lti):
 #        database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
 #        cHandler = database.cursor() 
 #        cours_id = lti.user_id
-#        cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_recommendation_latex (fichier_latex blob, cours_id integer)")
+#        cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_recommendation_latex (fichier_latex blob, cours_id integer, exo_id integer)")
 #        cHandler.execute("DELETE FROM mdl_exos_recommendation_latex WHERE cours_id=%s",lti.user_id)
 #        cHandler.execute("INSERT INTO mdl_exos_recommendation_latex (fichier_latex, cours_id) VALUES (%s,%s)",(data,cours_id))
         return render_template('ok_latex.html',lti=lti)
@@ -264,8 +264,7 @@ def exos(lti=lti):
         for items in results:
             resultats.append(get_exo(str(items[0])))
             num_resultats.append(str(items[0]))
-        macros=open('./macro2.tex').read()
-        
+        macros=open('./macro2.tex').read()        
         return render_template("exos2.html",lti=lti, macros=macros, num_resultats=num_resultats, resultats=resultats,num1=data1, num2=data2)
     return render_template('see_exos.html',lti=lti)
     
