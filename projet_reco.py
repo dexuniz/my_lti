@@ -218,6 +218,9 @@ def competences(lti=lti):
     cours_id = lti.user_id
     cHandler.execute("SELECT DISTINCT id_savoir_faire FROM mdl_exos_recommendation WHERE num_exo=%s AND cours_id=%s",(data,cours_id))
     results=cHandler.fetchall()
+    if results == ():
+        flash('Entrez un numéro d\'éxercice valide')
+        return render_template('see_competences.html')
     resultats=[]
     for items in results[1:]:
         cHandler.execute("SELECT savoir_faire FROM mdl_comp_recommendation WHERE id_savoir_faire=%s AND cours_id=%s",(items[0],cours_id))
@@ -230,7 +233,6 @@ def competences(lti=lti):
 def see_exos(lti=lti):
     # L'utilisateur tape le numero de l'exo dont il désire avoir les compétences
     return render_template('see_exos.html',lti=lti)
-    
 
 @app.route('/exos', methods=['GET','POST'])
 @lti(request='session', error=error, app=app)
@@ -240,32 +242,39 @@ def exos(lti=lti):
     data2=request.form['numero_comp2']
     if data1 == '':
             flash('Entrez un numero dans la case 1 en priorité')
-            return redirect(request.url)
+            return render_template('see_exos.html',lti=lti)
     database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = database.cursor() 
     cours_id = lti.user_id
     if data1 and data2=='':
         cHandler.execute("SELECT num_exo FROM mdl_exos_recommendation WHERE id_savoir_faire=%s AND cours_id = %s",(data1,cours_id))
         results=cHandler.fetchall()
-        resultats=[]
-        num_resultats=[]
-        for items in results:
-            resultats.append(get_exo(str(items[0])))
-            num_resultats.append(str(items[0]))
-        return render_template("exos.html",lti=lti, num_resultats=num_resultats, resultats=resultats,num1=data1)
+        if not results == ():
+            resultats=[]
+            num_resultats=[]
+            for items in results:
+                resultats.append(get_exo(str(items[0])))
+                num_resultats.append(str(items[0]))
+            return render_template("exos.html",lti=lti, num_resultats=num_resultats, resultats=resultats,num1=data1)
+        if results == ():
+            flash('Une ou plusieures compétences sont invalides')
+            return render_template('see_exos.html',lti=lti)
     if data1 and not data2=='':
         cHandler.execute("SELECT m1.num_exo FROM mdl_exos_recommendation m1 JOIN\
                          mdl_exos_recommendation m2 ON\
                          m1.num_exo = m2.num_exo AND m2.id_savoir_faire = %s WHERE \
                          m1.id_savoir_faire = %s AND m1.cours_id=%s",(data1,data2,cours_id))
         results=cHandler.fetchall()
-        resultats=[]
-        num_resultats=[]
-        for items in results:
-            resultats.append(get_exo(str(items[0])))
-            num_resultats.append(str(items[0]))
-        macros=open('./macro2.tex').read()        
-        return render_template("exos2.html",lti=lti, macros=macros, num_resultats=num_resultats, resultats=resultats,num1=data1, num2=data2)
+        if not results == ():
+            resultats=[]
+            num_resultats=[]
+            for items in results:
+                resultats.append(get_exo(str(items[0])))
+                num_resultats.append(str(items[0]))        
+            return render_template("exos2.html",lti=lti, num_resultats=num_resultats, resultats=resultats,num1=data1, num2=data2)
+        if results == ():
+            flash('Une ou plusieures compétences sont invalides')
+            return render_template('see_exos.html',lti=lti)
     return render_template('see_exos.html',lti=lti)
     
 @app.route('/teacher',methods=['GET','POST'])

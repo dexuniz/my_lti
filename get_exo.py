@@ -1,6 +1,7 @@
 
 def get_exo(num_exo):
     num_exo=int(num_exo)
+    num_exo1=num_exo
     data=open('./exos/exos.tex').read()
     if num_exo == -1:
         return data
@@ -43,5 +44,15 @@ def get_exo(num_exo):
         return data[:pos_fin3+10]
     if pos_fin1==-1:
         return data[:-14]
-    exotraite = data[:pos_fin1+10]
+    postexotraite=data[:pos_fin1+10]
+#    debutit=postexotraite.find('\\textit{')
+#    if not debutit == -1:
+#        postexotraite=postexotraite[:debutit-1]+'$'+postexotraite[debutit:]
+#        finit=postexotraite.find('}',debutit)
+#        postexotraite=postexotraite[:finit]+"$"+postexotraite[finit+1:]
+    exotraite = "$\\textbf{Exercice "+str(num_exo1)+"}$"+"$\\\\$"+postexotraite.replace('%','')\
+                .replace('-','').replace('\question','$\\\\Question :$').replace('\squestion','$\\\\Sous-question$')\
+                .replace('\\RR','\\mathbb R').replace('\\ZZ','\\mathbb Z').replace('\\NN','\\mathbb N')\
+                .replace('\\QQ','\\mathbb Q').replace('\\d','').replace('\\eps','\\epsilon').replace('\\epsilonilon','\\epsilon')\
+                .replace('\\begin{enumerate}','').replace('\\end{enumerate}','').replace('\\item','$\\\\$').replace('[a)]','')
     return exotraite
