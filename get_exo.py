@@ -54,5 +54,6 @@ def get_exo(num_exo):
                 .replace('-','').replace('\question','$\\\\Question :$').replace('\squestion','$\\\\Sous-question$')\
                 .replace('\\RR','\\mathbb R').replace('\\ZZ','\\mathbb Z').replace('\\NN','\\mathbb N')\
                 .replace('\\QQ','\\mathbb Q').replace('\\d','').replace('\\eps','\\epsilon').replace('\\epsilonilon','\\epsilon')\
-                .replace('\\begin{enumerate}','').replace('\\end{enumerate}','').replace('\\item','$\\\\$').replace('[a)]','')
+                .replace('\\begin{enumerate}','').replace('\\end{enumerate}','').replace('\\item','$\\\\$').replace('[a)]','')\
+                .replace('{\\trefle}','').replace('{\\coeur}','').replace('\\exo{}','').replace('\\exosd{}','')
     return exotraite

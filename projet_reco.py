@@ -222,10 +222,10 @@ def competences(lti=lti):
         flash('Entrez un numéro d\'éxercice valide')
         return render_template('see_competences.html')
     resultats=[]
-    for items in results[1:]:
+    for items in results:
         cHandler.execute("SELECT savoir_faire FROM mdl_comp_recommendation WHERE id_savoir_faire=%s AND cours_id=%s",(items[0],cours_id))
         viv=cHandler.fetchall()
-        resultats.append(viv[0][0].decode("latin1"))
+        resultats.append((viv[0][0].decode("latin1"),items))
     return render_template("competences.html",lti=lti, resultats=resultats,num=data)
     
 @app.route('/see_exos', methods=['GET','POST'])
@@ -257,7 +257,7 @@ def exos(lti=lti):
                 num_resultats.append(str(items[0]))
             return render_template("exos.html",lti=lti, num_resultats=num_resultats, resultats=resultats,num1=data1)
         if results == ():
-            flash('Une ou plusieures compétences sont invalides')
+            flash('Une ou plusieures compétences sont invalides OU aucun exercie ne correspond aux compétences renseignées')
             return render_template('see_exos.html',lti=lti)
     if data1 and not data2=='':
         cHandler.execute("SELECT m1.num_exo FROM mdl_exos_recommendation m1 JOIN\
