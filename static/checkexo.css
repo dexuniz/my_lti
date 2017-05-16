@@ -1,0 +1,53 @@
+@import url(http://fonts.googleapis.com/css?family=Noto+Sans);
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  color: #000;
+  background: #FFF;
+  font: 1.4em/1 'Noto Sans', sans-serif;
+}
+
+.container {
+  position: relative;
+  margin: auto;
+  overflow-x: hidden;
+  word-wrap: break-word;
+}
+
+input {
+  position: static;
+  left: -9999px;
+}	
+
+
+label {
+  display: block;
+  position: relative;
+  margin: 20px;
+  padding: 15px 30px 15px 62px;
+  word-wrap: break-word;
+  border: 3px solid #000000;
+  border-radius: 100px;
+  color: #000000;
+  background-color: #;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .2);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color .2s, box-shadow .2s;
+}
+
+label:hover, input:focus + label {
+  box-shadow: 0 0 20px rgba(0, 0, 0, .6);
+}
+
+input:checked + label {
+  background-color: #6a8494;
+}
+
+input:checked + label::before {
+  background-color: #fff;
+}

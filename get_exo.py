@@ -35,7 +35,7 @@ def get_exo(num_exo):
     pos_fin2=data[10:].find('\pb',pos_fin2+1)
     pos_fin3=data[10:].find('begin{exo}',pos_fin3+1)
     if pos_fin2==-1:
-        pos_fin2=pos_fin1+1
+        pos_fin2=pos_fin1+1 
     if pos_fin3==-1:
         pos_fin3=pos_fin1+1
     if pos_fin1>pos_fin2 and pos_fin3>pos_fin2:
@@ -45,15 +45,16 @@ def get_exo(num_exo):
     if pos_fin1==-1:
         return data[:-14]
     postexotraite=data[:pos_fin1+10]
-#    debutit=postexotraite.find('\\textit{')
-#    if not debutit == -1:
-#        postexotraite=postexotraite[:debutit-1]+'$'+postexotraite[debutit:]
-#        finit=postexotraite.find('}',debutit)
-#        postexotraite=postexotraite[:finit]+"$"+postexotraite[finit+1:]
+    debutit=postexotraite.find('exosd')
+    finit=postexotraite.find('}',debutit)
+    if not debutit == -1 and not finit == -1:
+        postexotraite=postexotraite[:debutit-1]+"Duree conseillee "+postexotraite[debutit+6:finit]+'$\\\\$'+postexotraite[finit+1:]
     exotraite = "$\\textbf{Exercice "+str(num_exo1)+"}$"+"$\\\\$"+postexotraite.replace('%','')\
                 .replace('-','').replace('\question','$\\\\Question :$').replace('\squestion','$\\\\Sous-question$')\
                 .replace('\\RR','\\mathbb R').replace('\\ZZ','\\mathbb Z').replace('\\NN','\\mathbb N')\
                 .replace('\\QQ','\\mathbb Q').replace('\\d','').replace('\\eps','\\epsilon').replace('\\epsilonilon','\\epsilon')\
                 .replace('\\begin{enumerate}','').replace('\\end{enumerate}','').replace('\\item','$\\\\$').replace('[a)]','')\
-                .replace('{\\trefle}','').replace('{\\coeur}','').replace('\\exo{}','').replace('\\exosd{}','')
+                .replace('{\\trefle}','').replace('{\\coeur}','').replace('\\exo{}','').replace('\\exosd{}','').replace('\\begin{multicols}{2}','')\
+                .replace('\\end{multicols}','').replace('{\\ccoeur}','').replace('\\section{Complexes}','')\
+                .replace('\\begin{exo}{}{}','').replace('\\end{exo}','').replace('[(a)]','')
     return exotraite

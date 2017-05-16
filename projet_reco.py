@@ -2,16 +2,14 @@
 # -*- coding: utf-8 -*- 
 import os
 import sys
-from flask import Flask, redirect,url_for , send_from_directory, render_template, request, flash
-from flask import render_template
-from werkzeug.utils import secure_filename
-import urllib
-import sqlite3
+from flask import Flask, redirect,url_for, render_template, request, flash
 from pylti.flask import lti
 import MySQLdb
 from get_params import get_params
 import xlrd
 from get_exo import get_exo
+from get_eleves import get_eleves
+import time
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -117,6 +115,7 @@ def majDB(lti=lti):
     cHandler.execute("DELETE FROM mdl_comp_recommendation WHERE cours_id=%s",lti.user_id)
     cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_theme_recommendation (id_theme integer, theme text, cours_id integer) ")  
     cHandler.execute("DELETE FROM mdl_theme_recommendation WHERE cours_id=%s",lti.user_id)
+    cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_eleves_recommendation (id_stud integer, id_exo integer, cours_id integer, date_created date) ")  
     # Open the workbook and define the worksheet
     book = xlrd.open_workbook("./exos/bdd.xlsx")
     sheets = book.sheet_names()
@@ -227,7 +226,7 @@ def competences(lti=lti):
         viv=cHandler.fetchall()
         resultats.append((viv[0][0].decode("latin1"),items))
     return render_template("competences.html",lti=lti, resultats=resultats,num=data)
-    
+
 @app.route('/see_exos', methods=['GET','POST'])
 @lti(request='session', error=error, role='staff', app=app)
 def see_exos(lti=lti):
@@ -283,9 +282,49 @@ def teachers_class(lti=lti):
 	[coursename,results] = get_params(lti)
 			
 	return render_template('displayStuds2.html', results=results, coursename=coursename)
-	
-
-def set_debugging():
+ 
+@app.route('/checkexo',methods=['GET','POST'])
+@lti(request='session', error=error,role = 'staff', app=app)
+def checkexo(lti=lti):
+    exos=[5,6,53,45,78,96,152,156,211]
+    database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
+    cHandler = database.cursor()
+    for id_exo in exos:
+        cHandler.execute("INSERT INTO TABLE mdl_exos_eleves_recommendation (id_stud %, id_exo %s, cours_id %s)"(id_stud,id_exo,cours_id))
+    results=[]
+    i=0
+    for item in exos:
+        new=[item,get_exo(str(item)),str(i)]
+        results.append(new)
+        i=i+1   
+    return render_template('checkexo.html',results=results)
+    
+@app.route('/gen_exo',methods=['GET','POST'])
+@lti(request='session', error=error,role = 'staff', app=app)
+def gen_exo(lti=lti):
+    res=get_eleves(lti)
+    database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
+    cHandler = database.cursor()
+    cours_id=lti.user_id
+    date=time.strftime("%d/%m/%Y")
+    for eleves in res:
+        exos=[5,6,53,45,78,96,152,156,211]
+        id_stud=eleves[0]
+        cHandler.execute("DELETE")
+        for id_exo in exos:
+            cHandler.execute("INSERT INTO TABLE mdl_exos_eleves_recommendation (id_stud %s, id_exo %s, cours_id %s, date_created %s)",(id_stud,id_exo,cours_id,date))
+    return render_template('gen_exo.html',res=res)
+    
+    
+@app.route('/val_exo',methods=['GET','POST'])
+@lti(request='session', error=error,role = 'staff', app=app)
+def val_exos(lti=lti):
+    if request.method == 'POST':
+        r=request.form.getlist("exo")
+        return render_template('exoval.html',results=r)
+    return url_for('check_exo')
+    
+def set_debugging():    
     """ Debuggage du logging
 
     """
