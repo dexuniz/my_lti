@@ -15,7 +15,7 @@
 </head>
 <h1>Exercices recommandes pour {{namestud[0]}} {{namestud[1]}}</h1>
 <body>
-<form action="{{url_for('val_exos')}}" method=post >
+<form action="{{url_for('val_exos', id_s = id_stud)}}" method=post >
 
 <div class="container">
   {%for items in results%}

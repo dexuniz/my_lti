@@ -12,6 +12,7 @@ from get_eleves import get_eleves
 from datetime import datetime
 from get_name import get_name
 from get_id import get_id
+from match_exo import match_exo
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -285,31 +286,6 @@ def teachers_class(lti=lti):
 			
 	return render_template('displayStuds2.html', results=results, coursename=coursename)
  
-@app.route('/select_stud',methods=['GET','POST'])
-@lti(request='session', error=error,role = 'staff', app=app)
-def select_stud(lti=lti):
-    studs=get_eleves(lti)
-    return render_template('select_stud.html',studs=studs)
-
-@app.route('/checkexo',methods=['GET','POST'])
-@lti(request='session', error=error,role = 'staff', app=app)
-def checkexo(lti=lti):
-    if request.method == 'POST':
-        id_stud=get_id(request.form.get("nom"))
-    else:
-        flash('Il y a eu un probleme, veuillez reselectionner un eleve')
-        return url_for(select_stud)
-    database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
-    cHandler = database.cursor()
-    cHandler.execute('SELECT id_exo FROM mdl_exos_eleves_recommendation WHERE realised = 0 AND id_stud=%s',id_stud)
-    exos=cHandler.fetchall()
-    i=0
-    results=[]
-    for item in exos:
-        new=[item,get_exo(item[0]),str(i)]
-        results.append(new)
-        i=i+1   
-    return render_template('checkexo.html',results=results, namestud=get_name(id_stud)[0], id_stud=id_stud)
     
 @app.route('/gen_exo',methods=['GET','POST'])
 @lti(request='session', error=error,role = 'staff', app=app)
@@ -339,20 +315,59 @@ def gen_exo(lti=lti):
         database.close()
         return render_template('gen_exo.html',res=res)
     return render_template('not_yet.html')
-    
+
+@app.route('/select_stud',methods=['GET','POST'])
+@lti(request='session', error=error,role = 'staff', app=app)
+def select_stud(lti=lti):
+    studs=get_eleves(lti)
+    return render_template('select_stud.html',studs=studs)
+
+@app.route('/checkexo',methods=['GET','POST'])
+@lti(request='session', error=error,role = 'staff', app=app)
+def checkexo(lti=lti):
+    if request.method == 'POST':
+        id_stud=get_id(request.form.get("nom"))
+    else:
+        id_stud=open('id_stud.txt')
+        id_stud=id_stud.read()
+    database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
+    cHandler = database.cursor()
+    cHandler.execute('SELECT DISTINCT id_exo FROM mdl_exos_eleves_recommendation WHERE realised = 0 AND id_stud=%s',id_stud)
+    exos=cHandler.fetchall()
+    i=0
+    with open("id_stud.txt", "w") as text_file:
+        text_file.write(id_stud)
+    results=[]
+    for item in exos:
+        new=[item,get_exo(item[0]),str(i)]
+        results.append(new)
+        i=i+1   
+    return render_template('checkexo.html',results=results, namestud=get_name(id_stud)[0])    
     
 @app.route('/val_exo',methods=['GET','POST'])
 @lti(request='session', error=error,role = 'staff', app=app)
-def val_exos(id_s,lti=lti):
+def val_exos(lti=lti):
     if request.method == 'POST':
+        id_stud=open('id_stud.txt')
+        id_stud=id_stud.read()
+        nom=get_name(id_stud)
         cours_id=lti.user_id
         database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
         cHandler = database.cursor()
         r=request.form.getlist("exo")
-        exos=cHandler.execute('SELECT id_exo FROM mdl_exos_eleves_recommendation WHERE id_stud=%s AND cours_id=%s',(id_s,cours_id))
-        return render_template('exoval.html',results=exos)
+        cHandler.execute('SELECT DISTINCT id_exo FROM mdl_exos_eleves_recommendation WHERE id_stud=%s AND cours_id=%s AND realised=0',(id_stud,cours_id))
+        exos=cHandler.fetchall()
+        results=match_exo(r,exos)
+        resultats=[]
+        for items in results:
+            resultats.append(get_exo(str(items)))
+        return render_template('exos_val.html',resultats=resultats, num_resultats=results, nom=nom[0])
     return url_for('check_exo')
-    
+
+@app.route('/send_exo',methods=['GET','POST'])
+@lti(request='session', error=error,role = 'staff', app=app)
+def send_exo(lti=lti):
+    return None
 def set_debugging():    
     """ Debuggage du logging
 
