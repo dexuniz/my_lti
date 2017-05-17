@@ -335,21 +335,18 @@ def checkexo(lti=lti):
     cHandler.execute('SELECT DISTINCT id_exo FROM mdl_exos_eleves_recommendation WHERE realised = 0 AND id_stud=%s',id_stud)
     exos=cHandler.fetchall()
     i=0
-    with open("id_stud.txt", "w") as text_file:
-        text_file.write(id_stud)
     results=[]
     for item in exos:
         new=[item,get_exo(item[0]),str(i)]
         results.append(new)
         i=i+1   
-    return render_template('checkexo.html',results=results, namestud=get_name(id_stud)[0])    
+    return render_template('checkexo.html',results=results, namestud=get_name(id_stud)[0], id_stud=id_stud)    
     
 @app.route('/val_exo',methods=['GET','POST'])
 @lti(request='session', error=error,role = 'staff', app=app)
 def val_exos(lti=lti):
     if request.method == 'POST':
-        id_stud=open('id_stud.txt')
-        id_stud=id_stud.read()
+        id_stud=request.form.get("id_stud")
         nom=get_name(id_stud)
         cours_id=lti.user_id
         database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
@@ -361,13 +358,36 @@ def val_exos(lti=lti):
         resultats=[]
         for items in results:
             resultats.append(get_exo(str(items)))
-        return render_template('exos_val.html',resultats=resultats, num_resultats=results, nom=nom[0])
+        return render_template('exos_val.html',resultats=resultats, num_resultats=results, nom=nom[0], id_stud=id_stud)
     return url_for('check_exo')
 
 @app.route('/send_exo',methods=['GET','POST'])
 @lti(request='session', error=error,role = 'staff', app=app)
 def send_exo(lti=lti):
-    return None
+    if request.method == 'POST':
+        exo_id=request.form.get('exo_id')
+        exo_id=exo_id.replace('[','')
+        exo_id=exo_id.replace(']','')
+        exo_id=exo_id.replace('L','')
+        exo_id=exo_id.split(',')
+        id_stud=request.form.get('id_stud')
+        date=datetime.today().strftime('%Y-%m-%d')
+        cours_id=lti.user_id
+        database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
+        cHandler = database.cursor()
+        cHandler.execute('DELETE FROM mdl_exos_eleves_recommendation WHERE id_stud=%s AND cours_id=%s',(id_stud,cours_id))
+        for id_exo in exo_id:
+            cHandler.execute("INSERT INTO mdl_exos_eleves_recommendation (id_stud, id_exo, cours_id,\
+                date_created, realised) VALUES (%s,%s,%s,%s,0)",(id_stud,id_exo,cours_id,date))
+        cHandler.execute('SELECT DISTINCT id_exo FROM mdl_exos_eleves_recommendation WHERE id_stud=%s AND cours_id=%s AND realised=0',(id_stud,cours_id))
+        exos=cHandler.fetchall()
+        cHandler.close()
+        database.commit()        
+        database.close()    
+        return render_template('exosok.html',r=exos)
+    else:
+        return url_for(checkexo)
+        
 def set_debugging():    
     """ Debuggage du logging
 

@@ -14,6 +14,8 @@
 	<h1>Numéro des exercices</h1>
 	<form action="{{url_for('send_exo')}}" method=post>
       <p><input name="exo" id="1" value="1" type="checkbox" checked>
+	  <input type="hidden" name="exo_id" value="{{num_resultats}}"/>
+	  <input type="hidden" name="id_stud" value="{{id_stud}}"/>
 	  <label for="1"><p>{%for num in num_resultats[:-1]%}
 		{{num}} -
 	{%endfor%}
