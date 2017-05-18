@@ -4,7 +4,7 @@ import json
 import MySQLdb
 
 def get_params(lti):
-    courseid = lti.user_id
+    courseid = lti.user_id[0]
     myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = myDB.cursor()
     results={} #dictionnaire qui sera utilisé pour générer du JSON

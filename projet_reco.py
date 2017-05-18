@@ -113,11 +113,11 @@ def majDB(lti=lti):
     database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = database.cursor() 
     cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_recommendation (num_exo integer, id_theme integer, id_savoir_faire integer, cours_id integer)")
-    cHandler.execute("DELETE FROM mdl_exos_recommendation WHERE cours_id=%s",lti.user_id)
+    cHandler.execute("DELETE FROM mdl_exos_recommendation WHERE cours_id=%s",lti.user_id[0])
     cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_comp_recommendation (id_savoir_faire integer, savoir_faire text, cours_id integer) ")  
-    cHandler.execute("DELETE FROM mdl_comp_recommendation WHERE cours_id=%s",lti.user_id)
+    cHandler.execute("DELETE FROM mdl_comp_recommendation WHERE cours_id=%s",lti.user_id[0])
     cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_theme_recommendation (id_theme integer, theme text, cours_id integer) ")  
-    cHandler.execute("DELETE FROM mdl_theme_recommendation WHERE cours_id=%s",lti.user_id)
+    cHandler.execute("DELETE FROM mdl_theme_recommendation WHERE cours_id=%s",lti.user_id[0])
     cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_eleves_recommendation (id_stud integer, id_exo integer, cours_id integer, date_created date, realised boolean) ")  
     # Open the workbook and define the worksheet
     book = xlrd.open_workbook("./exos/bdd.xlsx")
@@ -128,7 +128,7 @@ def majDB(lti=lti):
     sheet3 = book.sheet_by_name(sheets[3])
     # Get the cursor, which is used to traverse the database, line by line
     cursor = database.cursor()
-    cours_id = lti.user_id
+    cours_id = lti.user_id[0]
     # Tableau pour stocker les différents savoirs faire associés aux exercices
     tab_sf=[]
     tab_sf.append([])
@@ -158,10 +158,10 @@ def majDB(lti=lti):
                        (r,value,cours_id,theme)) 
     for r in range(1,sheet3.nrows):
         for j in range(0,len(tab_sft[r])):
-            cursor.execute("INSERT INTO mdl_comp_recommendation (id_savoir_faire, savoir_faire, cours_id) VALUES (%s,%s,%s)",(r,tab_sft[r][j],lti.user_id))
+            cursor.execute("INSERT INTO mdl_comp_recommendation (id_savoir_faire, savoir_faire, cours_id) VALUES (%s,%s,%s)",(r,tab_sft[r][j],lti.user_id[0]))
     for r in range(1,sheet0.nrows):
         for j in range(0,len(tab_t[r])):
-            cursor.execute("INSERT INTO mdl_theme_recommendation (id_theme, theme, cours_id) VALUES (%s,%s,%s)",(r,tab_t[r][j],lti.user_id))
+            cursor.execute("INSERT INTO mdl_theme_recommendation (id_theme, theme, cours_id) VALUES (%s,%s,%s)",(r,tab_t[r][j],lti.user_id[0]))
     # On supprime le fichier telechargé pour ne pas avoir de conflits lors d'une mise a jour
     #os.remove(".exos/bdd.xlsx")
     
@@ -217,7 +217,7 @@ def competences(lti=lti):
             return redirect(request.url)
     database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = database.cursor() 
-    cours_id = lti.user_id
+    cours_id = lti.user_id[0]
     cHandler.execute("SELECT DISTINCT id_savoir_faire FROM mdl_exos_recommendation WHERE num_exo=%s AND cours_id=%s",(data,cours_id))
     results=cHandler.fetchall()
     if results == ():
@@ -247,7 +247,7 @@ def exos(lti=lti):
             return render_template('see_exos.html',lti=lti)
     database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = database.cursor() 
-    cours_id = lti.user_id
+    cours_id = lti.user_id[0]
     if data1 and data2=='':
         cHandler.execute("SELECT num_exo FROM mdl_exos_recommendation WHERE id_savoir_faire=%s AND cours_id = %s",(data1,cours_id))
         results=cHandler.fetchall()
@@ -293,7 +293,7 @@ def gen_exo(lti=lti):
     res=get_eleves(lti)
     database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = database.cursor()
-    cours_id=lti.user_id
+    cours_id=lti.user_id[0]
     date=datetime.today().strftime('%Y-%m-%d')
 #    cHandler.execute('SELECT * FROM mdl_exos_eleves_recommendation WHERE date_created>sysdate-6 AND cours_id=%s',cours_id)
 #    will=cHandler.fetchall()
@@ -302,8 +302,8 @@ def gen_exo(lti=lti):
         cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_eleves_recommendation (id_stud integer, id_exo integer, cours_id integer, date_created date, realised boolean) ")
 #        cHandler.execute('DELETE * FROM mdl_exos_eleves_recommendation WHERE cours_id=%s AND realised=1',cours_id)
         for eleves in res:
-            exos=[5,6,53,45,78,96,152,156,211]
             id_stud=eleves[0]
+            exos=[5,6,53,45,78,96,152,156,211]
             for id_exo in exos:
                 cHandler.execute("INSERT INTO mdl_exos_eleves_recommendation (id_stud, id_exo, cours_id,\
                 date_created, realised) VALUES (%s,%s,%s,%s,0)",(id_stud,id_exo,cours_id,date))
@@ -348,7 +348,7 @@ def val_exos(lti=lti):
     if request.method == 'POST':
         id_stud=request.form.get("id_stud")
         nom=get_name(id_stud)
-        cours_id=lti.user_id
+        cours_id=lti.user_id[0]
         database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
         cHandler = database.cursor()
         r=request.form.getlist("exo")
@@ -372,21 +372,33 @@ def send_exo(lti=lti):
         exo_id=exo_id.split(',')
         id_stud=request.form.get('id_stud')
         date=datetime.today().strftime('%Y-%m-%d')
-        cours_id=lti.user_id
+        cours_id=lti.user_id[0]
         database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
         cHandler = database.cursor()
         cHandler.execute('DELETE FROM mdl_exos_eleves_recommendation WHERE id_stud=%s AND cours_id=%s',(id_stud,cours_id))
         for id_exo in exo_id:
             cHandler.execute("INSERT INTO mdl_exos_eleves_recommendation (id_stud, id_exo, cours_id,\
                 date_created, realised) VALUES (%s,%s,%s,%s,0)",(id_stud,id_exo,cours_id,date))
-        cHandler.execute('SELECT DISTINCT id_exo FROM mdl_exos_eleves_recommendation WHERE id_stud=%s AND cours_id=%s AND realised=0',(id_stud,cours_id))
-        exos=cHandler.fetchall()
         cHandler.close()
         database.commit()        
         database.close()    
-        return render_template('exosok.html',r=exos)
+        return render_template('exosok.html')
     else:
         return url_for(checkexo)
+        
+@app.route('/get_my_exos',methods=['GET','POST'])
+@lti(request='session', error=error, app=app)
+def get_my_exos(lti=lti):
+    [cours_id,id_stud]=lti.user_id
+    database = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
+    cHandler = database.cursor()
+    cHandler.execute('SELECT DISTINCT id_exo FROM mdl_exos_eleves_recommendation WHERE id_stud=%s AND cours_id=%s AND realised=0',(id_stud,cours_id))
+    exos=cHandler.fetchall()
+    results=[]
+    for items in exos:
+        results.append(get_exo(items[0]))
+    nom=get_name(id_stud)
+    return render_template('get_my_exos.html',num_resultats=exos,resultats=results,nom=nom[0])
         
 def set_debugging():    
     """ Debuggage du logging

@@ -3,7 +3,7 @@
 import MySQLdb
 
 def get_eleves(lti):
-    courseid = lti.user_id
+    courseid = lti.user_id[0]
     myDB = MySQLdb.connect(host="127.0.0.1",port=3306,user="root",passwd="",db="moodle")
     cHandler = myDB.cursor()
     cHandler.execute("SELECT DISTINCT u.id AS userid, u.lastname AS lastname, u.firstname AS firstname\
@@ -16,5 +16,5 @@ def get_eleves(lti):
 	JOIN mdl_role r ON r.id = ra.roleid AND r.shortname = 'student'\
 	WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0\
 	AND (ue.timeend = 0 OR ue.timeend > NOW()) AND ue.status = 0 AND courseid = %s ORDER BY lastname", courseid)
-    res = cHandler.fetchall()    
+    res = cHandler.fetchall()
     return res
