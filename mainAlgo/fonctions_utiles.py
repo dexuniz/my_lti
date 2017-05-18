@@ -7,18 +7,18 @@ def sigmoid(x):
 
 
 
-def proba_juste(beta, theta, d, q):
+def proba_juste(theta, d, facilite, Q):
     """Donne en fonction des paramètres la probabilité que la réponse soit juste"""
     K = len(theta)
-    s = beta
+    s = facilite
     for k in range(K):
-        s += q[k]*theta[k]*d
+        s += Q[k]*theta[k]*d[k]
     return sigmoid(s)
 
 
-def proba_reponse(beta, theta, d, q, reponse):
+def proba_reponse(theta, d, facilite, Q, reponse):
     """Donne en fonction des paramètres la probabilité que la réponse corresponde à reponse (=0 ou 1)"""
-    p = proba_juste(beta, theta, d, q)
+    p = proba_juste(theta, d, facilite, Q)
     if reponse==1:
         return p
     else:
@@ -26,21 +26,21 @@ def proba_reponse(beta, theta, d, q, reponse):
 
 
 
-def vraisemblance(questions, beta, theta, diff, matQ, reponses):
+def vraisemblance(questions, theta, matQ, reponses):
     L = 1
     # questions contient la liste des questions répondues
-    for i in range(len(questions)):
-        L = L*proba_reponse(beta, theta, diff[i], matQ[i], reponses[i])
+    for (i, q) in enumerate(questions):
+        L = L*proba_reponse(theta, q.discriminations, q.facilite, matQ[i], reponses[i])
     return L
 
 
-def esperanceVraisemblance(questions, questionsChoisies, beta, theta, beta2, theta2, diff, matQ, matQChoisie, reponses):
+def esperanceVraisemblance(questions, questionsChoisies, theta, matQ, matQChoisies, reponses):
+    ### à corriger
     L = 1
     # questions contient la liste des questions répondues
-    for i in range(len(questions)):
-        L = L*proba_reponse(beta, theta, diff[i], matQ[i], reponses[i])
-    for qc in questionsChoisies:
-        p = proba_juste(beta, theta, qc.difficulte, matQChoisie)
-        p2 = proba_juste(beta2, theta2, qc.difficulte, matQChoisie)
-        L = L * (p*p2 + (1-p)*(1-p2))
+    for (i, q) in enumerate(questions):
+        L = L*proba_reponse(theta, q.discriminations, q.facilite, matQ[i], reponses[i])
+    for (i, qc) in enumerate(questionsChoisies):
+        p = proba_juste(theta, qc.discriminations, qc.facilite, matQChoisies[i])
+        L = L * (p*p + (1-p)*(1-p))
     return L

@@ -1,5 +1,5 @@
-class Exercice():
-    """Exercice composé de questions	"""
+class Exercice(object):
+    """Exercice composé de questions    """
 
     def __init__(self, nId, enonce, questions, themes, competences):
         self.nId = nId
@@ -7,7 +7,6 @@ class Exercice():
         self.questions = questions
         self.themes = themes
         self.competences = competences
-	
+    
 
-		
-		
+     

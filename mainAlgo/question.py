@@ -1,14 +1,13 @@
-class Question():
+class Question(object):
     """Exercice lambda	"""
 
-    def __init__(self, nId, enonce, reponse, themes, competences, difficulte=1):
+    def __init__(self, nId, enonce, reponse, themes, competences, discriminations, facilite=1):
         self.nId = nId
         self.enonce = enonce
         self.reponse = reponse
         self.themes = themes
         self.competences = competences
-        self.difficulte = difficulte # chaque question a 1 difficulté (il n'y a pas de difficultés différentes pour chaque connaissance)
-	
-
+        self.discriminations = discriminations
+        self.facilite = facilite 
 		
 		

@@ -1,47 +1,30 @@
 from fonctions_utiles import vraisemblance, esperanceVraisemblance
 import scipy
-import json
+import jsonpickle
+import question, theme, competence, etudiant, exercice
 
-class Main():
+
+
+class Main(object):
     """Moteur de l'algorithme de recommendation 'Apprentissage adaptatif'    """
 
     #--------------------------------------------------------------------------
     
-    def __init__(self, etudiants, themes, competences, exercices, jsonFileName=""):
+    def __init__(self, etudiants={}, themes={}, competences={}, exercices={}, questions={}):
         self.etudiants = etudiants
         self.themes = themes
         self.competences = competences
         self.exercices = exercices
-        self.questions = exercices    ## !
-        self.jsonFileName = jsonFileName
-        if jsonFileName != "":
-            self.chargerJson()
+        self.questions = questions
+
  
         
     
     #--------------------------------------------------------------------------
 
-    def genererQuiz(self, eleve, competencesTestees):
+    def genererFE(self, eleve, competencesTestees):
         """Génère une Feuille d'Exercices correspondant à un élève et à des compétences"""
-        
-        
-        fe = []
-                      
-        # compétences requises
-        competencesRequises = []
-        for c in competencesTestees:
-                if (not c in competencesRequises) and (eleve.getNiveau(c.getId())<=1):
-                    competencesRequises.append(c)
-        
-        
-        # generation triviale avec 1 exercice par competence
-        for c in competencesRequises+competencesTestees:
-            exo = next(e for e in self.exercices if c in e.competences)
-            if not exo in fe:
-                fe.append(exo)
-
-        
-        return fe
+        return []
         
         
     #--------------------------------------------------------------------------
@@ -50,113 +33,123 @@ class Main():
     def actualiserNiveaux(self, etudiant):
         questions = [self.questions[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
         reponses = [etudiant.questionsRepondues[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
-        diff = [q.difficulte for q in questions]
         matriceQ = [[1 if k in q.competences else 0 for k in self.competences] for q in questions]
         
-        bnds = [[-10, 10]]*(len(self.competences)+1)
-        f = lambda x : -vraisemblance(questions, x[0], x[1:], diff, matriceQ, reponses)
-        niveaux = scipy.optimize.minimize(f, [0]*(len(self.competences)+1), bounds=bnds)
-        print(niveaux.x)
-        print(-niveaux.fun)
-        etudiant.setCapacite(niveaux.x[0])
-        etudiant.setNiveaux(list(niveaux.x[1:]))
+        bnds = [[-10, 10]]*len(self.competences)
+        f = lambda x : -vraisemblance(questions, x, matriceQ, reponses)
+        opt = scipy.optimize.minimize(f, [0]*len(self.competences), bounds=bnds)
+#        print(opt.x)
+#        print(-opt.fun)
+        etudiant.setNiveaux(opt.x)
         
-        
-        
-    def vraisemblance(self, etudiant, beta, theta):
-        questions = [self.questions[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
-        reponses = [etudiant.questionsRepondues[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
-        diff = [q.difficulte for q in questions]
-        matriceQ = [[1 if k in q.competences else 0 for k in self.competences] for q in questions]
-        
-        v = vraisemblance(questions, beta, theta, diff, matriceQ, reponses)
-        return(v)
         
     
-    def choisirQuestion(self, etudiant, betaTemp, thetaTemp, competences):
-        maxProgres = 0
-        choixQuestion = None
-        for questionChoisie in self.questions:
-            if [k for k in questionChoisie.competences if k in competences] != []:
+#    def choisirQuestion(self, etudiant, competences):
+#        maxProgres = float('-inf')
+#        choixQuestion = None
+#        # On parcours toutes les questions possibles
+#        for questionChoisie in self.questions:
+#            # Si la question concerne les compétences concernées
+#            if [k for k in questionChoisie.competences if k in competences] != []:
+#                questionsRepondues = [self.questions[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
+#                reponses = [etudiant.questionsRepondues[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
+#                matriceQ = [[1 if k in q.competences else 0 for k in self.competences] for q in questionsRepondues]
+#                matQChoisie = [1 if k in questionChoisie.competences else 0 for k in self.competences]
+#                bnds = [[-10, 10]]*len(self.competences)
+#                f = lambda x : -esperanceVraisemblance(questionsRepondues, [questionChoisie], x,  matriceQ, [matQChoisie], reponses)
+#                opt = scipy.optimize.minimize(f, [0]*len(self.competences), bounds=bnds)
+#                progres = sum([opt.x[c.nId]-etudiant.niveauxCompetences[c.nId] for c in competences])
+#                if progres >= maxProgres:
+#                    maxProgres = progres
+#                    choixQuestion = questionChoisie
+#        return choixQuestion
+
+    def choisirExercice(self, etudiant, idCompetences):
+        maxProgres = float('-inf')
+        choixExercice = None
+        competences = [self.competences[i] for i in idCompetences]
+        # On parcours les exerices possibles
+        for exercice in self.exercices.values():
+            # Si l'exercice concerne les bonnes competences
+            if [k for k in exercice.competences if k in competences] != []:
                 questionsRepondues = [self.questions[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
                 reponses = [etudiant.questionsRepondues[i] for i in etudiant.questionsRepondues if etudiant.questionsRepondues[i]!=-1]
-                diff = [q.difficulte for q in questionsRepondues]
                 matriceQ = [[1 if k in q.competences else 0 for k in self.competences] for q in questionsRepondues]
-                matQChoisie = [1 if k in questionChoisie.competences else 0 for k in self.competences]
-                bnds = [[-10, 10]]*(len(self.competences)+1)
-                f = lambda x : -esperanceVraisemblance(questionsRepondues, [questionChoisie], x[0], x[1:], betaTemp, thetaTemp, diff, matriceQ, matQChoisie, reponses)
-                niveaux = scipy.optimize.minimize(f, [0]*(len(self.competences)+1), bounds=bnds)
-                progres = sum([niveaux.x[c.nId+1]-thetaTemp[c.nId] for c in competences])
+                matQChoisies = [[1 if k in q.competences else 0 for k in self.competences] for q in exercice.questions]
+                bnds = [[-10, 10]]*len(self.competences)
+                f = lambda x : -esperanceVraisemblance(questionsRepondues, exercice.questions, x,  matriceQ, matQChoisies, reponses)
+                opt = scipy.optimize.minimize(f, [0]*len(self.competences), bounds=bnds)
+                progres = sum([opt.x[c.nId]-etudiant.niveauxCompetences[c.nId] for c in competences])
                 if progres >= maxProgres:
                     maxProgres = progres
-                    choixQuestion = questionChoisie
-        return choixQuestion
+                    choixExercice = exercice
+        # Renoie l'id de l'exercice choisi
+        return choixExercice
     
 
     #--------------------------------------------------------------------------
         
-    def chargerJson(self):
-        """Charge les données depius le(s) fichier(s) json"""
-        pass
-		
-    #-------------------------------------------------------------------------
-
-    #--------------------------------------------------------------------------
-        
-    def ecrireJson(self):
-        """Ecrit les données depius le(s) fichier(s) json"""
-        json.dumps(self.exercices, indent=4)
-		
-    #-------------------------------------------------------------------------
-
+    
+    
+    def ajouterTheme(self, idTheme, nom):
+        self.themes[idTheme] = theme.Theme(idTheme, nom)
  
-    #--------------------------------------------------------------------------
-        
-    def ajouterExercice(self, exercice):
-        """Ajoute un exercice à la base de donnée"""
-        pass
-		
-    #-------------------------------------------------------------------------
+    def ajouterCompetence(self, idCompetence, nom, idTheme, idPrerequis):
+        self.competences[idCompetence] = competence.Competence(idCompetence, nom, self.themes[idTheme], prerequis=[self.competences[i] for i in idPrerequis])
+
+    def ajouterQuestion(self,  idQuestion, enonce, reponse, idThemes, idCompetences, discriminations, facilite):
+        for k in self.competences:
+            if not k in discriminations:
+                if k in idCompetences:
+                    discriminations[k] = 1
+                else:
+                    discriminations[k] = -1                    
+        self.questions[idQuestion] = question.Question(idQuestion, enonce, reponse, themes=[self.themes[i] for i in idThemes], competences=[self.competences[i] for i in idCompetences], discriminations=discriminations, facilite=facilite)
+
+    def ajouterExercice(self,  idExercice, enonce, idQuestions, idThemes, idCompetences):
+        self.exercices[idExercice] = exercice.Exercice(idExercice, enonce, questions=[self.questions[i] for i in idQuestions], themes=[self.themes[i] for i in idThemes], competences=[self.competences[i] for i in idCompetences])
+
+    def ajouterEtudiant(self,  idEtudiant, prenom, nom, niveauxCompetences, resultats):
+        for k in self.competences:
+            if not k in resultats:
+                resultats[k] = -1                  
+        self.etudiants[idEtudiant] = etudiant.Etudiant(idEtudiant, prenom, nom, niveauxCompetences, resultats)
+
 
 
         
 #==============================================================================
 
 if __name__ == "__main__":
-    
-    import question, theme, competence, etudiant
 
 
-    theme1 = theme.Theme(1, "Arithmétique")
-    competence1 = competence.Competence(1, "Addition", theme1, [])
-    competence2 = competence.Competence(2, "Soustraction", theme1, [competence1])
-    competence3 = competence.Competence(3, "", theme1, [])
+    main = Main()
+    
+    # Il faut respecter l'ordre d'import themes -> competences -> questions -> exercices, etudiants
+    
+    main.ajouterTheme(0, "Arithmétique")
+    main.ajouterCompetence(0, "Addition", 0, [])
+    main.ajouterCompetence(1, "Soustraction", 0, [0])
+    main.ajouterCompetence(2, "Multiplication", 0, [0])
 
-    bob = etudiant.Etudiant("John", "Smith", [0, 0, 0], 0)
+    main.ajouterQuestion(0, "3 + 4 =", "7", [0], [0], {}, 1)
+    main.ajouterQuestion(1, "2 + 5 =", "7", [0], [0], {}, 1)
+    main.ajouterQuestion(2, "", "", [0], [0, 1], {}, 1)
+    main.ajouterQuestion(3, "", "", [0], [0], {}, 1)
+    main.ajouterQuestion(4, "", "", [0], [0], {}, 1)
+    main.ajouterQuestion(5, "", "", [0], [0], {}, 1)
+    main.ajouterQuestion(6, "", "", [0], [1], {}, 1)
     
-    q0 = question.Question(0, "3 + 4 =", "7", [theme1], [competence1])
-    q1 = question.Question(1, "2 + 5 =", "7", [theme1], [competence1])
-    q2 = question.Question(2, "", "", [theme1], [competence1,competence2])
-    q3 = question.Question(3, "", "", [theme1], [competence1])
-    q4 = question.Question(4, "", "", [theme1], [competence1])
-    q5 = question.Question(5, "", "", [theme1], [competence1])
-    q6	= question.Question(6, "", "", [theme1], [competence2])
+    main.ajouterExercice(0, "texte", [0, 1], [0], [0])
+    main.ajouterExercice(1, "texte", [2, 3, 4], [0], [0, 1])
+    main.ajouterExercice(2, "texte", [5, 6], [0], [0, 1])
+
+    main.ajouterEtudiant(0, "Bob", "Smith", {}, {0:0, 1:1, 6:0})
     
+    bob = main.etudiants[0]
     
-    main = Main([bob], [theme1], [competence1, competence2, competence3], [q0,q1,q2,q3,q4,q5,q6])
-    
-    
-    
-    
-    
-#    fe1 = main.genererQuiz(john, [competence1])
-#    fe2 = main.genererQuiz(john, [competence2])
-#
-#    print("FE Addition")
-#    for exo in fe1:
-#        exo.afficherEnonce()
-#    print("FE Soustraction")
-#    for exo in fe2:
-#        exo.afficherEnonce()
+    main.actualiserNiveaux(bob)
+    print("?")
+    print(main.choisirExercice(bob, [0]).nId)
         
-   ## main.ecrireJson()
+

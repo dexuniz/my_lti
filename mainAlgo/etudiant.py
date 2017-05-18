@@ -1,12 +1,11 @@
-
-class Etudiant():
+class Etudiant(object):
     """Représentation d'un étudiant et de ses capacités    """
 
-    def __init__(self, prenom, nom, niveauxCompetences=[], capacite=0):
+    def __init__(self, nId, prenom, nom, niveauxCompetences={}, resultats={}):
+        self.nId = nId
         self.prenom = prenom
         self.nom = nom
-        self.niveauxCompetences = niveauxCompetences ## [theta_1, theta_2, ...]
-        self.capacite = capacite
+        self.niveauxCompetences = niveauxCompetences ## {1:theta_1, 2:theta_2, ...}
         self.questionsRepondues = {} ## {question.idNb: -1 non repondue, 0 faux ou 1 juste, ...}
         
     def getNiveau(self, competenceId):
@@ -15,12 +14,6 @@ class Etudiant():
     def setNiveaux(self, niveaux):
         self.niveauxCompetences = niveaux
  
-    def setCapacite(self, capacite):
-        self.capacite = capacite
-        
-
-    def getCapacites(self):
-        return self.capacite, self.niveauxCompetences
+    def getCompetences(self):
+        return self.niveauxCompetences
     
-
-        

@@ -1,4 +1,4 @@
-class Theme():
+class Theme(object):
     """Thème de mathématiques 
     comme par exemple Arithmétique"""
 
