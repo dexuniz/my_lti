@@ -1,0 +1,45 @@
+from get_exo import get_exo
+from flask.ext.sqlalchemy import SQLAlchemy  # import sql module
+import os
+import MySQLdb
+
+
+def exosindb(course_id, nbexos):
+    state=0
+    text = get_exo(str(nbexos))
+    print text
+
+    database = MySQLdb.connect(host="127.0.0.1",port=8889,user="moodle",passwd="moodle",db="moodle31")
+    cHandler = database.cursor()
+    cHandler.execute("CREATE TABLE IF NOT EXISTS mdl_exos_db (cours_id integer,numero_exo integer, subject text)")
+    cHandler.execute("DELETE FROM mdl_exos_db WHERE cours_id=%s", course_id)
+    database.commit()
+
+    for i in range(nbexos):
+        temp= get_exo(str(i+1))
+        #print i
+        #cHandler.execute("INSERT INTO mdl_exos_db VALUES (%s, %s, %s)", (course_id, i, temp))
+        sql = "INSERT INTO mdl_exos_db VALUES (%s, %s, %s)"
+        value = (course_id, i+1, temp)
+        try:
+            cHandler.execute(sql, value)
+            database.commit()
+        except:
+            # Rollback in case there is any error
+            database.rollback()
+            state=1
+
+    #sql = "INSERT INTO mdl_exos_db VALUES (%s, %s, %s)"
+    #value=(1, 4, temp)
+    #cHandler.execute(sql, value)
+    #database.commit()
+
+
+
+    return state
+
+exosindb(1,255)
+
+#exosindb(param1,param2) is a function which input is course_id and the number of exos we want to charge in database
+#all these input is in integer form
+#output is the execution state 0 for success and 1 for error
